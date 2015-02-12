@@ -151,6 +151,7 @@ apt-get -y dist-upgrade
 sed -i 's/FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_12.04_Teeth
 
 # clean up

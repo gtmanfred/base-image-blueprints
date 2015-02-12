@@ -60,6 +60,7 @@ apt-get update
 apt-get -y dist-upgrade
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_Testing_KVM
 
 # clean up

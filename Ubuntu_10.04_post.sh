@@ -163,6 +163,7 @@ xvc0
 EOF
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_10.04
 
 # clean up

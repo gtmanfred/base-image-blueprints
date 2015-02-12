@@ -178,4 +178,5 @@ for k in $(find /var/log -type f); do echo > $k; done
 
 echo "done done"
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh CentOS_6_Teeth

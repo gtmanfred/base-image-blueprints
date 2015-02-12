@@ -67,6 +67,7 @@ echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no
 update-grub
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_Testing_Teeth
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?

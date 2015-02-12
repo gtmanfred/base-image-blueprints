@@ -69,6 +69,7 @@ apt-get update
 apt-get -y dist-upgrade
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_7_Teeth
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?

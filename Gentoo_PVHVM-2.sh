@@ -222,6 +222,7 @@ sleep 5
 sed -i 's?export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"?export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"\n\nconfig="/etc/conf.d/nova-agent"\nif [ -f "$config" ]\nthen\n  source $config\nfi?g' /etc/init.d/nova-agent
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Gentoo_PVHVM
 
 # clean up

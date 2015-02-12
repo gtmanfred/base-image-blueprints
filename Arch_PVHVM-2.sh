@@ -146,6 +146,7 @@ systemctl enable sshd
 pacman -Syu --noconfirm
 
 # log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Arch_PVHVM
 
 # guest utilities kludge
