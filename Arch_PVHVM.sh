@@ -22,7 +22,7 @@ bootstrap_date=$(curl ftp://mirror.rackspace.com/archlinux/iso/ | grep -iv 'arch
 wget http://mirror.rackspace.com/archlinux/iso/$bootstrap_date/archlinux-bootstrap-$bootstrap_date-x86_64.tar.gz
 tar -zxf archlinux*.tar.gz
 mv root.x86_64/* . && rm -rf root.x86_64
-rm -rf etc/resolv.conf
+rm -f etc/resolv.conf
 cp /etc/resolv.conf etc/resolv.conf
 echo 'Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > etc/pacman.d/mirrorlist
 
