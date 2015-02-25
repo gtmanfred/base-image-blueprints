@@ -21,7 +21,7 @@ cd /mnt/arch
 bootstrap_date=$(curl ftp://mirror.rackspace.com/archlinux/iso/ | grep -iv 'archboot'| grep -iv 'latest'|awk {'print $9'}|tail -n 1|awk {'print $1'})
 wget http://mirror.rackspace.com/archlinux/iso/$bootstrap_date/archlinux-bootstrap-$bootstrap_date-x86_64.tar.gz
 tar -zxf archlinux*.tar.gz
-mv root.x86_64/* . && rm -rf root.x86_64
+mv root.x86_64/* . && rmdir root.x86_64
 rm -f etc/resolv.conf
 cp /etc/resolv.conf etc/resolv.conf
 echo 'Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' > etc/pacman.d/mirrorlist
