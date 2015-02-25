@@ -73,7 +73,7 @@ wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_7_Teeth
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-wget https://github.com/rackerlabs/base-image-blueprints/raw/master/kickstarts/Teeth-cloud-init
+wget http://KICK_HOST/Teeth-cloud-init
 cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
 
 # fsck no autorun on reboot

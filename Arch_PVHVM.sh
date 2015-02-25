@@ -32,7 +32,7 @@ mount -t proc none /mnt/arch/proc
 mount --rbind /sys /mnt/arch/sys
 mount --rbind /dev /mnt/arch/dev
 mount --rbind /run /mnt/arch/run
-wget https://github.com/rackerlabs/base-image-blueprints/raw/master/kickstarts/Arch_PVHVM-2.sh
+wget http://KICK_HOST/Arch_PVHVM-2.sh
 chmod +x Arch_PVHVM-2.sh
 chroot /mnt/arch /bin/bash -c "/Arch_PVHVM-2.sh"
 

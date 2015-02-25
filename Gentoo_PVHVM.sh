@@ -39,7 +39,7 @@ echo "Chroot into new system"
 mount -t proc none /mnt/gentoo/proc
 mount --rbind /sys /mnt/gentoo/sys
 mount --rbind /dev /mnt/gentoo/dev
-wget https://github.com/rackerlabs/base-image-blueprints/raw/master/kickstarts/Gentoo_PVHVM-2.sh
+wget http://KICK_HOST/Gentoo_PVHVM-2.sh
 chmod +x Gentoo_PVHVM-2.sh
 chroot /mnt/gentoo /bin/bash -c "/Gentoo_PVHVM-2.sh"
 

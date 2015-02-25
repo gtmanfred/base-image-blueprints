@@ -61,7 +61,7 @@ apt-get -y dist-upgrade
 
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Debian_7_KVM
+bash -x package_postback.sh Debian_7_KVM
 
 # clean up
 passwd -d root
