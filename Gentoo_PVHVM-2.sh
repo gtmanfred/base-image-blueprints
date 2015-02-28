@@ -40,7 +40,7 @@ EOF
 dd if=/dev/zero of=/swapfile1 bs=1024 count=1048576 && mkswap /swapfile1 && chown root:root /swapfile1 && chmod 0600 /swapfile1 && swapon /swapfile1
 emerge-webrsync
 emerge --sync --quiet
-emerge -u world
+emerge -uDN --with-bdeps=y @world
 
 # setup networking
 #emerge dhcpcd
@@ -59,7 +59,7 @@ cd /usr/src/linux
 wget http://KICK_HOST/Gentoo_PVHVM_kernel_config
 mv Gentoo_PVHVM_kernel_config .config
 make olddefconfig
-make && make modules_install
+make -j10 && make modules_install
 cp arch/x86_64/boot/bzImage /boot/kernel-gentoo-pvhvm
 
 # update fstab
