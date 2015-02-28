@@ -13,7 +13,7 @@ echo "UTC" > /etc/timezone
 echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
 echo 'en_US ISO-8859-1' >> /etc/locale.gen
 locale-gen
-eselect locale set 3
+eselect locale set en_US.utf8
 
 # setup config for portage
 cat > /etc/portage/make.conf <<EOF
@@ -40,7 +40,7 @@ EOF
 dd if=/dev/zero of=/swapfile1 bs=1024 count=1048576 && mkswap /swapfile1 && chown root:root /swapfile1 && chmod 0600 /swapfile1 && swapon /swapfile1
 emerge-webrsync
 emerge --sync --quiet
-emerge -u world
+emerge -uDN --with-bdeps=y @world
 
 # setup networking
 #emerge dhcpcd
@@ -59,7 +59,7 @@ cd /usr/src/linux
 wget http://KICK_HOST/Gentoo_PVHVM_kernel_config
 mv Gentoo_PVHVM_kernel_config .config
 make olddefconfig
-make && make modules_install
+make -j10 && make modules_install
 cp arch/x86_64/boot/bzImage /boot/kernel-gentoo-pvhvm
 
 # update fstab
@@ -152,8 +152,8 @@ cat > /etc/portage/package.accept_keywords <<'EOF'
 =dev-python/jsonpointer-1.7 ~amd64
 =dev-python/jsonpatch-1.9 ~amd64
 EOF
-eselect python set 1
-emerge cloud-init # portage cloud-inits now fixed!
+eselect python set python2.7
+emerge cloud-init
 
 sed -i 's?depend() {?depend() {\n  after net?g' /etc/init.d/cloud-init-local
 chmod +x /etc/init.d/cloud*
