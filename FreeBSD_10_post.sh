@@ -98,7 +98,6 @@ IMAGE_ID=$(curl -X GET -H 'Accept: text/plain' http://POSTBACK_HOST/api/image_id
 /root/tmp/packages.sh > /root/tmp/packages.txt
 curl -X POST -H 'Accept: application/json' -H "Content-Type: application/json" -d "$(cat /root/tmp/packages.txt)" http://POSTBACK_HOST/api/pkg_info/$CONFIG_LABEL/$IMAGE_ID/pkg
 # clean up
-passwd -d root
 rm -rf /root/tmp
 rm -rf /var/lib/cloud
 rm -f /etc/ssh/ssh_host*
