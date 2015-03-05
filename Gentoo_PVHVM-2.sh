@@ -56,7 +56,7 @@ rc-update add sshd default
 # kernel recompile
 emerge gentoo-sources
 cd /usr/src/linux
-wget http://KICK_HOST/Gentoo_PVHVM_kernel_config
+wget http://KICK_HOST/kickstarts/Gentoo_PVHVM_kernel_config
 mv Gentoo_PVHVM_kernel_config .config
 make olddefconfig
 make -j10 && make modules_install

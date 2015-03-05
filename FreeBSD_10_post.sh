@@ -1,6 +1,7 @@
 #!/bin/sh
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:
 env ASSUME_ALWAYS_YES=YES pkg bootstrap
+echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 ftp https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/v1.39.0/nova-agent-FreeBSD-amd64-1.39.0.tar.gz
 tar xzvf nova-agent-FreeBSD-amd64-1.39.0.tar.gz
 sh installer.sh

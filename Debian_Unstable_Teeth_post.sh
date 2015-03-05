@@ -52,18 +52,6 @@ EOF
 #echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
 #echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 
-# update
-apt-get clean
-apt-get update
-apt-get -y upgrade
-apt-get -y dist-upgrade
-
-# do this here so updates mirror from testing is gone
-cat > /etc/apt/sources.list <<'EOF'
-deb http://mirror.rackspace.com/debian sid main
-deb-src http://mirror.rackspace.com/debian sid main
-EOF
-
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/g' /etc/default/grub

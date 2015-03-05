@@ -114,7 +114,7 @@ vername=$(echo $dirname|cut -d "-" -f 2)
 tar -xJf $filename
 cd $dirname
 make mrproper
-wget http://KICK_HOST/Arch_PVHVM_kernel_config
+wget http://KICK_HOST/kickstarts/Arch_PVHVM_kernel_config
 mv Arch_PVHVM_kernel_config .config
 make olddefconfig
 make && make modules_install

@@ -1,15 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # fix bootable flag
 parted -s /dev/xvda set 1 boot on
-
-# install xen tools
-wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities_6.2.0-1120_amd64.deb
-dpkg -i xe-guest-utilities*.deb
-
-# install agent
-wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39.1.deb
-dpkg -i nova-agent*
 
 # Debian puts these in the wrong order from what we need
 # should be ConfigDrive, None but preseed populates with
@@ -26,8 +18,6 @@ ssh_pwauth: True
 ssh_deletekeys: True
 resize_rootfs: noblock
 EOF
-#bootcmd:
-# - xenstore-write attr/PVAddons/MajorVersion 6; xenstore-write attr/PVAddons/MinorVersion 0; xenstore-write attr/PVAddons/MicroVersion 0; xenstore-write data/updated 1
 
 # cloud-init kludges
 echo -n > /etc/udev/rules.d/70-persistent-net.rules
@@ -379,10 +369,6 @@ EOF
 insserv xe-linux-distribution
 insserv nova-agent
 
-# update
-apt-get update
-apt-get -y dist-upgrade
-
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_7_PVHVM
@@ -395,7 +381,6 @@ rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
-#rm -f /etc/resolv.conf
 rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst

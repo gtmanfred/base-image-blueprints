@@ -1,27 +1,7 @@
 #!/bin/bash
 
-# do this here so updates mirror from testing is gone
-cat > /etc/apt/sources.list <<'EOF'
-deb http://mirror.rackspace.com/debian sid main
-deb-src http://mirror.rackspace.com/debian sid main
-EOF
-
-# update
-apt-get clean
-apt-get update
-apt-get -y dist-upgrade
-apt-get -y upgrade
-
 # fix bootable flag
 parted -s /dev/xvda set 1 boot on
-
-# install xen tools
-wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities_6.2.0-1120_amd64.deb
-dpkg -i xe-guest-utilities_6.2.0-1120_amd64.deb
-
-# install agent
-wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39.1.deb
-dpkg -i nova-agent*
 
 # Debian puts these in the wrong order from what we need
 # should be ConfigDrive, None but preseed populates with
@@ -413,7 +393,6 @@ rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
-#rm -f /etc/resolv.conf
 rm -f /etc/hostname
 rm -f /root/.bash_history
 rm -f /root/.nano_history
