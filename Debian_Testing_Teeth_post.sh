@@ -71,7 +71,7 @@ wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_Testing_Teeth
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-wget http://KICK_HOST/Teeth-cloud-init
+wget http://KICK_HOST/kickstarts/Teeth-cloud-init
 cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
 
 # another teeth specific

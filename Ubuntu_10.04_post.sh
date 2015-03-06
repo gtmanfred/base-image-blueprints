@@ -19,15 +19,15 @@ mkdir /tmp/tmp
 cd /tmp/tmp
 
 # install xen tools
-wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities_6.2.0-1120_amd64.deb
-dpkg -i xe-guest-utilities_6.2.0-1120_amd64.deb
+#wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities_6.2.0-1120_amd64.deb
+#dpkg -i xe-guest-utilities_6.2.0-1120_amd64.deb
 
 # install agent
-wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39.1.deb
-dpkg -i nova-agent-1.39.1.deb
-#wget https://github.com/rackerlabs/openstack-guest-agents-unix/archive/1.39.1.tar.gz
-#tar xzvf nova-agent-Linux-x86_64-1.39.1.tar.gz
-#sh installer.sh
+#wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39.1.deb
+#dpkg -i nova-agent-1.39.1.deb
+wget http://KICK_HOST/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
+tar xzvf nova-agent*tar.gz
+sh installer.sh
 # 10.04 won't add startup scripts properly, forcing it
 update-rc.d -f nova-agent defaults
 
@@ -175,7 +175,7 @@ rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
-rm -f /etc/resolv.conf
+#rm -f /etc/resolv.conf
 rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst

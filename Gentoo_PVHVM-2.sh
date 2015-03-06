@@ -139,8 +139,8 @@ rc-update add xe-daemon default
 # install agent
 mkdir /root/nova-agent
 cd /root/nova-agent
-wget https://github.com/rackerlabs/openstack-guest-agents-unix/archive/1.39.1.tar.gz
-tar xzvf nova-agent-Linux-x86_64-1.39.1.tar.gz
+wget http://KICK_HOST/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
+tar xzvf nova-agent*.tar.gz
 sh installer.sh
 rc-update del nova-agent default
 rc-update add nova-agent sysinit
