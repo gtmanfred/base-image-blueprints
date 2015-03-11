@@ -22,6 +22,7 @@ pkg install -fy py27-cheetah
 pkg install -fy py27-jsonpointer
 pip install pyyaml
 pip install pyserial
+pip install six
 echo 'sshd_enable="YES"' >> /etc/rc.conf
 echo 'xenguest_enable="YES"' >> /etc/rc.conf
 echo 'nova_agent_enable="YES"' >> /etc/rc.conf
@@ -42,7 +43,7 @@ cat > /etc/rc.local <<'IOF'
 exit 0
 IOF
 EOF
-ftp http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-init-fbsd.tar.gz
+wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-init-fbsd.tar.gz
 tar xzvf cloud-init*
 cd cloud-init-fbsd
 python setup.py install

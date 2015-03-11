@@ -159,6 +159,10 @@ sed -i 's%root=.*%root=LABEL=/ console=ttyS4,115200n8 8250.nr_uarts=5 modprobe.b
 sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=permissive/s' /etc/selinux/config
 
+# log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
+bash package_postback.sh CentOS_6_Teeth
+
 # clean up
 yum clean all
 passwd -d root
@@ -175,8 +179,3 @@ rm -rf /tmp/tmp
 for k in $(find /tmp -type f); do rm -f $k; done
 for k in $(find /root -type f \( ! -iname ".*" \)); do rm -f $k; done
 for k in $(find /var/log -type f); do echo > $k; done
-
-echo "done done"
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh CentOS_6_Teeth

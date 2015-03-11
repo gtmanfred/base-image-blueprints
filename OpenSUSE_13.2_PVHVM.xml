@@ -1,10 +1,29 @@
 <?xml version="1.0"?>
 <!DOCTYPE profile>
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <add-on>
+    <add_on_products config:type="list">
+      <listentry>
+        <media_url>http://download.opensuse.org/update/13.2</media_url>
+        <product>openSUSE_13.2_Update</product>
+        <product_dir>/</product_dir>
+        <ask_on_error config:type="boolean">false</ask_on_error>
+      </listentry>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+    </add_on_products>
+  </add-on>
+
   <users config:type="list">
     <user>
       <username>root</username>
-      <user_password>rootme</user_password>
+      <user_password>novaagentneedsunlockedrootaccountsowedeletepasswordinpost</user_password>
       <encrypted config:type="boolean">false</encrypted>
       <forename/>
       <surname/>
@@ -35,6 +54,7 @@
   </deploy_image>
   <general>
     <ask-list config:type="list"/>
+    <proposals config:type="list"/>
     <mode>
       <halt config:type="boolean">true</halt>
       <confirm config:type="boolean">false</confirm>
@@ -46,13 +66,12 @@
     <mouse>
       <id>none</id>
     </mouse>
-    <proposals config:type="list"/>
     <signature-handling>
       <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
       <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
       <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
       <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
-      <accept_verification_failed config:type="boolean">false</accept_verification_failed>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
       <import_gpg_key config:type="boolean">true</import_gpg_key>
     </signature-handling>
     <storage/>
@@ -300,28 +319,8 @@
     <stop_on_solver_conflict
       config:type="boolean">true</stop_on_solver_conflict>
   </upgrade>
-<add-on>
- <add_on_products config:type="list">
-   <listentry>
-     <media_url><![CDATA[http://mirror.rackspace.com/opensuse/update/13.2/x86_64/]]></media_url>
-     <product>openSUSE-13.2-Update</product>
-     <product_dir>/</product_dir>
-     <ask_on_error config:type="boolean">true</ask_on_error>
-     <name>openSUSE-13.2-Update</name>
-   </listentry>
-</add_on_products>
-</add-on>
-<online_update_configuration>
-<auto_agree_with_licenses
-config:type="boolean">true</auto_agree_with_licenses>
-<enable_automatic_online_update
-config:type="boolean">true</enable_automatic_online_update>
-<skip_interactive_patches
-config:type="boolean">true</skip_interactive_patches>
-<update_interval>weekly</update_interval>
-</online_update_configuration>
     <image/>
-    <instsource/>
+    <instsource>http://download.opensuse.org/update/13.2/</instsource>
     <packages config:type="list">
       <package>autoyast2</package>
       <package>crda</package>
@@ -332,6 +331,7 @@ config:type="boolean">true</skip_interactive_patches>
       <package>xen-kmp-default</package>
       <package>wget</package>
       <package>cloud-init</package>
+      <package>e2fsprogs</package>
       <package>sudo</package>
       <package>glibc-locale</package>
       <package>python-setuptools</package>
@@ -360,7 +360,16 @@ config:type="boolean">true</skip_interactive_patches>
     </patterns>
     <remove-packages config:type="list">
     </remove-packages>
-    <do_online_update config:type="boolean">false</do_online_update>  <!-- since openSUSE 11.1 -->
+  <do_online_update config:type="boolean">false</do_online_update>  <!-- since openSUSE 11.1 -->
+  <online_update_configuration>
+    <auto_agree_with_licenses
+      config:type="boolean">true</auto_agree_with_licenses>
+    <enable_automatic_online_update
+      config:type="boolean">true</enable_automatic_online_update>
+    <skip_interactive_patches
+      config:type="boolean">true</skip_interactive_patches>
+    <update_interval>weekly</update_interval>
+  </online_update_configuration>
   </software>
   <timezone>
     <hwclock>UTC</hwclock>
@@ -388,6 +397,17 @@ cd /root/tmp
 cat > /etc/resolv.conf<<'EOF'
 nameserver 8.8.8.8
 EOF
+cat > /etc/zypp/repos.d/openSUSE-13.2-updates.repo <<'EOF'
+[openSUSE-13.2-updates]
+name=openSUSE-13.2-updates
+enabled=1
+autorefresh=1
+baseurl=http://mirror.rackspace.com/opensuse/update/13.2/
+type=NONE
+EOF
+sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
+update-grub
+rm -f /etc/zypp/repos.d/*opensuse*.repo
 wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities-6.2.0-1120.x86_64.rpm
 wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
 rpm -Uhv xe-guest-utilities*.rpm
@@ -398,11 +418,12 @@ wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcd
 wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-utils-0.27-9.fc20.noarch.rpm
 wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-utils-growpart-0.27-9.fc20.noarch.rpm
 wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/dracut-modules-growroot-0.20-2.fc20.noarch.rpm
-rpm -Uhv --nodeps cloud-*rpm
+rpm -Uhv --nodeps --force cloud-*rpm
 chkconfig cloud-init-local on
 chkconfig cloud-init on
 chkconfig cloud-config on
 chkconfig cloud-final on
+rpm -Uhv --nodeps *dracut*.rpm
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 datasource_list: [ ConfigDrive , None ]
 disable_root: False
@@ -453,6 +474,17 @@ EOF
 cat >> /etc/modprobe.d/50-blacklist.conf <<'EOF'
 blacklist i2c_piix4
 EOF
+cat > /etc/init.d/network <<'EOF' 
+#!/bin/sh
+# added by image creation for nova-agent compatibility
+# this file should go away in a future update
+# don't rely on this for anything, use systemd
+if [ "$1" = "restart" ];
+then
+systemctl restart network.service
+fi
+EOF
+chmod +x /etc/init.d/network
 
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh

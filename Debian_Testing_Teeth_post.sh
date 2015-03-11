@@ -56,8 +56,8 @@ EOF
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
 # update
-apt-get update
-apt-get -y dist-upgrade
+#apt-get update
+#apt-get -y dist-upgrade
 
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub

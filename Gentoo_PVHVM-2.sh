@@ -16,7 +16,7 @@ locale-gen
 eselect locale set en_US.utf8
 
 # setup config for portage
-cat > /etc/portage/make.conf <<EOF
+cat > /etc/portage/make.conf <<'EOF'
 # These settings were set by the catalyst build script that automatically
 # built this stage.
 # Please consult /usr/share/portage/config/make.conf.example for a more
@@ -36,14 +36,15 @@ PORTDIR="/usr/portage"
 DISTDIR="${PORTDIR}/distfiles"
 PKGDIR="${PORTDIR}/packages"
 EOF
+
 #make swapfile and enable
-dd if=/dev/zero of=/swapfile1 bs=1024 count=1048576 && mkswap /swapfile1 && chown root:root /swapfile1 && chmod 0600 /swapfile1 && swapon /swapfile1
+#dd if=/dev/zero of=/swapfile1 bs=1024 count=1048576 && mkswap /swapfile1 && chown root:root /swapfile1 && chmod 0600 /swapfile1 && swapon /swapfile1
+
 emerge-webrsync
 emerge --sync --quiet
-emerge -uDN --with-bdeps=y @world
+emerge -u world
 
 # setup networking
-#emerge dhcpcd
 cd /etc/init.d
 ln -s net.lo net.eth0
 ln -s net.lo net.eth1
@@ -59,8 +60,9 @@ cd /usr/src/linux
 wget http://KICK_HOST/kickstarts/Gentoo_PVHVM_kernel_config
 mv Gentoo_PVHVM_kernel_config .config
 make olddefconfig
-make -j10 && make modules_install
+make  && make modules_install
 cp arch/x86_64/boot/bzImage /boot/kernel-gentoo-pvhvm
+cp .config /boot/config
 
 # update fstab
 cat > /etc/fstab<<EOF
@@ -140,10 +142,10 @@ rc-update add xe-daemon default
 mkdir /root/nova-agent
 cd /root/nova-agent
 wget http://KICK_HOST/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
-tar xzvf nova-agent*.tar.gz
+tar xzvf nova-agent-Linux-x86_64-1.39.1.tar.gz
 sh installer.sh
 rc-update del nova-agent default
-rc-update add nova-agent sysinit
+rc-update add nova-agent boot
 
 #install cloud-init
 cat > /etc/portage/package.accept_keywords <<'EOF'
@@ -176,6 +178,8 @@ ssh_deletekeys:   0
 resize_rootfs: 0
 syslog_fix_perms:
 ssh_genkeytypes: ['rsa', 'dsa']
+bootcmd:
+ - ip address flush dev eth1
 EOF
 
 cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg<<EOF
@@ -212,7 +216,8 @@ echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 rc-update del swapfiles boot
 
 # one shots
-USE='bindist' emerge --oneshot --verbose ">=dev-libs/openssl-1.0.1i"
+#USE='bindist' emerge --oneshot --verbose ">=dev-libs/openssl-1.0.1i"
+emerge openssl
 emerge net-misc/curl
 emerge sudo
 emerge gentoolkit
@@ -229,6 +234,7 @@ bash package_postback.sh Gentoo_PVHVM
 eselect news read all
 eclean-dist --destructive
 passwd -d root
+rm -f /usr/portage/distfiles/*
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/resolv.conf
 rm -f /root/.bash_history
@@ -241,6 +247,6 @@ for k in $(find /var/log -type f); do echo > $k; done
 for k in $(find /tmp -type f); do rm -f $k; done
 
 # cleanup
-swapoff /swapfile1 && rm -rf /swapfile1
+#swapoff /swapfile1 && rm -rf /swapfile1
 rm -rf /stage3-amd64*
 echo "Exiting Chroot..."
