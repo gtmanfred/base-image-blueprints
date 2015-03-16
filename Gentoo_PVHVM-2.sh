@@ -48,10 +48,10 @@ emerge -u world
 cd /etc/init.d
 ln -s net.lo net.eth0
 ln -s net.lo net.eth1
+rc-update add net.lo default
 rc-update add net.eth0 default
 rc-update add net.eth1 default
 rc-update add netmount default
-rc-update add net.lo boot
 rc-update add sshd default
 
 # kernel recompile
@@ -180,6 +180,7 @@ syslog_fix_perms:
 ssh_genkeytypes: ['rsa', 'dsa']
 bootcmd:
  - ip address flush dev eth1
+ - /etc/init.d/net.eth1 restart
 EOF
 
 cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg<<EOF
@@ -200,6 +201,8 @@ sed -i 's/ - \[ \*log_base, \*log_syslog ]/# - \[ \*log_base, \*log_syslog ]/g' 
 
 #Adding in for upcoming dhcp net options
 emerge dhcpcd
+#Prevent dhcpcd from blowing away working resolv.conf
+#sed -i 's$config_0="dhcp"$#config_0="dhcp"$g' /etc/init.d/net.lo
 
 cat > /etc/hosts <<'EOF'
 127.0.0.1   localhost

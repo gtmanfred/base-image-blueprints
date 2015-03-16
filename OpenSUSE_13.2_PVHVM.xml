@@ -30,24 +30,7 @@
     </user>
   </users>
   <bootloader>
-    <global>
-      <activate>true</activate>
-      <generic_mbr>true</generic_mbr>
-      <lines_cache_id>13</lines_cache_id>
-      <timeout config:type="integer">8</timeout>
-    </global>
-    <loader_type>grub2</loader_type>
-    <initrd_modules config:type="list">
-      <initrd_module>
-        <module>ata_generic</module>
-      </initrd_module>
-      <initrd_module>
-        <module>xen-vbd</module>
-      </initrd_module>
-      <initrd_module>
-        <module>xen-vnif</module>
-      </initrd_module>
-    </initrd_modules>
+    <loader_type>none</loader_type>
   </bootloader>
   <deploy_image>
     <image_installation config:type="boolean">false</image_installation>
@@ -266,7 +249,8 @@
           <fstopt>defaults,noatime,barrier=0</fstopt>
           <loop_fs config:type="boolean">false</loop_fs>
           <mount>/</mount>
-          <mountby config:type="symbol">device</mountby>
+          <label>ROOT</label>
+          <mountby config:type="symbol">label</mountby>
           <partition_id config:type="integer">131</partition_id>
           <partition_nr config:type="integer">1</partition_nr>
           <resize config:type="boolean">false</resize>
@@ -291,22 +275,22 @@
     <errors>
       <log config:type="boolean">true</log>
       <show config:type="boolean">true</show>
-      <timeout config:type="integer">0</timeout>
+      <timeout config:type="integer">10</timeout>
     </errors>
     <messages>
       <log config:type="boolean">true</log>
       <show config:type="boolean">true</show>
-      <timeout config:type="integer">0</timeout>
+      <timeout config:type="integer">10</timeout>
     </messages>
     <warnings>
       <log config:type="boolean">true</log>
       <show config:type="boolean">true</show>
-      <timeout config:type="integer">0</timeout>
+      <timeout config:type="integer">10</timeout>
     </warnings>
     <yesno_messages>
       <log config:type="boolean">true</log>
       <show config:type="boolean">true</show>
-      <timeout config:type="integer">0</timeout>
+      <timeout config:type="integer">10</timeout>
     </yesno_messages>
   </report>
   <runlevel>
@@ -405,8 +389,6 @@ autorefresh=1
 baseurl=http://mirror.rackspace.com/opensuse/update/13.2/
 type=NONE
 EOF
-sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
-update-grub
 rm -f /etc/zypp/repos.d/*opensuse*.repo
 wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities-6.2.0-1120.x86_64.rpm
 wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
@@ -415,15 +397,11 @@ wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download
 rpm -Uhv nova-agent*
 chkconfig sshd on
 wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-init-0.7.5-bzr971.noarch.rpm
-wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-utils-0.27-9.fc20.noarch.rpm
-wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-utils-growpart-0.27-9.fc20.noarch.rpm
-wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/dracut-modules-growroot-0.20-2.fc20.noarch.rpm
 rpm -Uhv --nodeps --force cloud-*rpm
 chkconfig cloud-init-local on
 chkconfig cloud-init on
 chkconfig cloud-config on
 chkconfig cloud-final on
-rpm -Uhv --nodeps *dracut*.rpm
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 datasource_list: [ ConfigDrive , None ]
 disable_root: False
@@ -443,8 +421,13 @@ system_info:
     package_mirrors: []
 EOF
 rm -f /etc/growroot-disabled
-sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
+# can't get autoyast's bootloader to use disk labels instead of uuids
+# the root=UUID portion in grub breaks rescue mode and other functions
+# so "bootloader" above is disabled and the things below done manually instead
+grub2-install /dev/hda
+echo 'GRUB_DISABLE_LINUX_UUID=true' >> /etc/default/grub
 grub2-mkconfig --output=/boot/grub2/grub.cfg
+parted -s /dev/hda set 1 boot on
 chmod 000 /usr/lib/YaST2/startup/YaST2.Second-Stage
 systemctl disable YaST2-Second-Stage.service
 cat > /etc/systemd/system/cloud-init-local.service <<'EOF'
@@ -455,11 +438,7 @@ After=local-fs.target
 
 [Service]
 Type=oneshot
-ExecStartPre=/usr/bin/sleep 25
-ExecStartPre=/etc/init.d/network restart
-ExecStartPre=/sbin/netconfig -f update
-ExecStartPre=/etc/init.d/network restart
-ExecStartPre=/usr/bin/sleep 5
+ExecStartPre=/usr/bin/sleep 30
 ExecStart=/usr/bin/cloud-init init --local
 RemainAfterExit=yes
 TimeoutSec=60
@@ -469,10 +448,6 @@ StandardOutput=tty
 
 [Install]
 WantedBy=multi-user.target
-EOF
-
-cat >> /etc/modprobe.d/50-blacklist.conf <<'EOF'
-blacklist i2c_piix4
 EOF
 cat > /etc/init.d/network <<'EOF' 
 #!/bin/sh
@@ -510,4 +485,3 @@ echo "done"
     </post-scripts>
   </scripts>
 </profile>
-
