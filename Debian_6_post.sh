@@ -8,7 +8,7 @@ wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcd
 dpkg -i xe-guest-utilities*.deb
 
 # install agent
-wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39.1.deb
+wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent_1.39.1_all.deb
 dpkg -i nova-agent*
 
 # Debian puts these in the wrong order from what we need

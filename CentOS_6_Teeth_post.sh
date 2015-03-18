@@ -155,7 +155,8 @@ cloud_config_modules:
 EOF
 
 # force grub to use generic disk labels, bootloader above does not do this
-sed -i 's%root=.*%root=LABEL=/ console=ttyS4,115200n8 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
+#sed -i 's%root=.*%root=LABEL=/ console=ttyS4,115200n8 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
+sed -i 's%root=.*%root=LABEL=/ 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
 sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=permissive/s' /etc/selinux/config
 

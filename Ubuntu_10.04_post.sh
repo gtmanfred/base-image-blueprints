@@ -23,8 +23,8 @@ cd /tmp/tmp
 #dpkg -i xe-guest-utilities_6.2.0-1120_amd64.deb
 
 # install agent
-#wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39.1.deb
-#dpkg -i nova-agent-1.39.1.deb
+#wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent_1.39.1_all.deb
+#dpkg -i nova-agent_1.39.1_all.deb
 wget http://KICK_HOST/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
 tar xzvf nova-agent*tar.gz
 sh installer.sh
