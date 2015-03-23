@@ -219,11 +219,12 @@ echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 rc-update del swapfiles boot
 
 # one shots
-#USE='bindist' emerge --oneshot --verbose ">=dev-libs/openssl-1.0.1i"
-emerge openssl
+emerge --oneshot --verbose ">=dev-libs/openssl-0.9.8z_p5-r1"
+USE='+bindist' emerge --oneshot --verbose ">=dev-libs/openssl-1.0.1l-r1"
 emerge net-misc/curl
 emerge sudo
 emerge gentoolkit
+revdep-rebuild
 sleep 5
 
 # Fix networking nova-agent bug - REMOVE after nova-agent fix gets upstream
