@@ -91,7 +91,7 @@ cd /boot
 wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/growpart-initramfs
 
 # setup grub legacy
-emerge sys-boot/grub:0
+USE="-ncurses" emerge sys-boot/grub:0
 cat > /boot/grub/grub.conf<<EOF
 # This is a sample grub.conf for use with Genkernel, per the Gentoo handbook
 # http://www.gentoo.org/doc/en/handbook/handbook-x86.xml?part=1&chap=10#doc_chap2
