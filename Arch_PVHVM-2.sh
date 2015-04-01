@@ -105,7 +105,7 @@ systemctl enable cloud-final.service
 rm -rf /boot/*linux*
 cd /usr/src
 url=https://www.kernel.org
-url_suffix=$(curl $url| grep -A 1 "latest_link"| tail -1| cut -d "\"" -f 2 | cut -d "." -f 2-)
+url_suffix=$(curl -L $url| grep -A 1 "latest_link"| tail -1| cut -d "\"" -f 2 | cut -d "." -f 2-)
 wget -c $url$url_suffix
 filename=$(echo $url_suffix|cut -d "/" -f 6)
 dirname=$(echo $filename|cut -d "." -f -3)
@@ -168,6 +168,7 @@ rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
 rm -rf /root/nova-agent
+rm -f /installer.sh #crap pacman guest agent leftovers
 rm -rf /tmp/build
 for k in $(find /var/log -type f); do echo > $k; done
 for k in $(find /tmp -type f); do rm -f $k; done
