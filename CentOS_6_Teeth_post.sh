@@ -68,7 +68,7 @@ echo "Disabling tmpfs for /tmp."
 systemctl mask tmp.mount
 
 # set some stuff
-echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
+#echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
 #echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 
 # disable auto fsck on boot
@@ -152,6 +152,17 @@ cloud_config_modules:
  - disable-ec2-metadata
  - runcmd
  - byobu
+
+# this bit scales some sysctl parameters to flavor type
+bootcmd:
+  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
+  - sysctl -p
 EOF
 
 # force grub to use generic disk labels, bootloader above does not do this

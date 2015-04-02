@@ -31,6 +31,16 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
+# this bit scales some sysctl parameters to flavor type
+bootcmd:
+  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
+  - sysctl -p
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -58,8 +68,8 @@ ff02::2 ip6-allrouters
 EOF
 
 # set some stuff
-echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
-echo 'vm.swappiness = 0' >> /etc/sysctl.conf
+#echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
+#echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub

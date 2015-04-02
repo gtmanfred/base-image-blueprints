@@ -83,6 +83,26 @@ ssh_pwauth: 1
 ssh_deletekeys:   0
 resize_rootfs: 0
 syslog_fix_perms:
+
+# The modules that run in the 'config' stage
+cloud_config_modules:
+# Emit the cloud config ready event
+# this can be used by upstart jobs for 'start on cloud-config'.
+ - emit_upstart
+ - disk_setup
+ - mounts
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - package-update-upgrade-install
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
 EOF
 
 cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg<<EOF
