@@ -55,6 +55,8 @@ update-grub
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
+pip install heat-cfntools
+
 # update
 apt-get update
 apt-get -y dist-upgrade
