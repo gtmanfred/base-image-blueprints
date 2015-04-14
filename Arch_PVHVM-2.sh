@@ -181,6 +181,7 @@ resolvconf -u
 
 # clean up
 passwd -d root
+echo "" > /etc/machine-id
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/resolv.conf
 rm -f /root/.bash_history
