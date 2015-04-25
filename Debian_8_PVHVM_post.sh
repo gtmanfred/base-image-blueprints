@@ -95,7 +95,6 @@ StandardOutput=journal+console
 WantedBy=multi-user.target
 EOF
 
-
 # some systemd workarounds
 sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
 update-rc.d xe-linux-distribution defaults
@@ -135,16 +134,16 @@ EOF
 
 # do this here so we have our mirror set
 cat > /etc/apt/sources.list <<'EOF'
-deb http://mirror.rackspace.com/debian stretch main
-deb-src http://mirror.rackspace.com/debian stretch main
+deb http://mirror.rackspace.com/debian jessie main
+deb-src http://mirror.rackspace.com/debian jessie main
 
-deb http://mirror.rackspace.com/debian-security/ stretch/updates main
-deb-src http://mirror.rackspace.com/debian-security/ stretch/updates main
+deb http://mirror.rackspace.com/debian-security/ jessie/updates main
+deb-src http://mirror.rackspace.com/debian-security/ jessie/updates main
 EOF
 
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Debian_Testing_PVHVM
+bash package_postback.sh Debian_8_PVHVM
 
 # clean up
 passwd -d root

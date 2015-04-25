@@ -419,6 +419,16 @@ system_info:
     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
     shell: /bin/sh
     package_mirrors: []
+# this bit scales some sysctl parameters to flavor type
+bootcmd:
+  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
+  - sysctl -p
 EOF
 rm -f /etc/growroot-disabled
 # can't get autoyast's bootloader to use disk labels instead of uuids

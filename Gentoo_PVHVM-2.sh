@@ -181,6 +181,14 @@ ssh_genkeytypes: ['rsa', 'dsa']
 bootcmd:
  - ip address flush dev eth1
  - /etc/init.d/net.eth1 restart
+ - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+ - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+ - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+ - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+ - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
+ - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
+ - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
+ - sysctl -p
 EOF
 
 cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg<<EOF
