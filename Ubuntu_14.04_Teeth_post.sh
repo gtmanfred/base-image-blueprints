@@ -4,7 +4,8 @@
 parted -s /dev/sda set 1 boot on
 
 # custom teeth cloud-init bit
-wget https://244cb001e7940f815e7d-eed332c78fa1ec49f5728fa74ebb315e.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
+#wget https://244cb001e7940f815e7d-eed332c78fa1ec49f5728fa74ebb315e.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
+wget http://KICK_HOST/cloud-init/cloud-init-teeth-python2.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -20,7 +21,7 @@ echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
 ssh_pwauth: False
-ssh_deletekeys: True
+ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True

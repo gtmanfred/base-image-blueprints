@@ -15,7 +15,7 @@ EOF
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
 ssh_pwauth: True
-ssh_deletekeys: True
+ssh_deletekeys: False
 resize_rootfs: noblock
 # this bit scales some sysctl parameters to flavor type
 bootcmd:

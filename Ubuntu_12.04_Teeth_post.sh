@@ -7,7 +7,8 @@ mkdir /tmp/tmp
 cd /tmp/tmp
 
 # custom cloud-init
-wget https://be3c4d5274cd5307ce4a-fa55afd7e9be71a29fceec8b7b5e23fe.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
+#wget https://be3c4d5274cd5307ce4a-fa55afd7e9be71a29fceec8b7b5e23fe.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
+wget http://KICK_HOST/cloud-init/cloud-init-teeth-python2.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -15,7 +16,7 @@ apt-mark hold cloud-init
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
 ssh_pwauth: False
-ssh_deletekeys: True
+ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True

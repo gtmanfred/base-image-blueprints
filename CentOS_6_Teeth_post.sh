@@ -88,7 +88,8 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
-wget http://559bf13610f1c068ef67-1f39c9b68192359d629954d9e4642580.r76.cf2.rackcdn.com/cloud-init-0.7.5-14rackspace.x86_64.rpm
+#wget http://559bf13610f1c068ef67-1f39c9b68192359d629954d9e4642580.r76.cf2.rackcdn.com/cloud-init-0.7.5-14rackspace.x86_64.rpm
+wget http://KICK_HOST/cloud-init/cloud-init-teeth-cent6.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
 

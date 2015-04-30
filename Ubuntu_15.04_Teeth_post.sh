@@ -4,7 +4,8 @@
 parted -s /dev/sda set 1 boot on
 
 # custom teeth cloud-init bit
-wget https://e0399644aa2564da8102-cbe1f047c5bc5210015df7087c6eeb9e.ssl.cf5.rackcdn.com/cloud-init_0.7.5-1rackspace4_all.deb
+#wget https://e0399644aa2564da8102-cbe1f047c5bc5210015df7087c6eeb9e.ssl.cf5.rackcdn.com/cloud-init_0.7.5-1rackspace4_all.deb
+wget http://KICK_HOST/cloud-init/cloud-init-teeth-python3.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -20,7 +21,7 @@ sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
 ssh_pwauth: False
-ssh_deletekeys: True
+ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True
@@ -31,17 +32,16 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
-# this bit scales some sysctl parameters to flavor type
-#bootcmd:
-#  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
-#  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
-#  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
-#  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
-#  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
-#  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
-#  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
-#  - sysctl -p
-#EOF
+bootcmd:
+  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
+  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
+  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
+  - sysctl -p
+EOF
 
 # preseeds/debconf do not work for this anymore :(
 cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'

@@ -15,7 +15,7 @@ EOF
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
 ssh_pwauth: False
-ssh_deletekeys: True
+ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
 apt_preserve_sources_list: True
@@ -79,13 +79,16 @@ sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
 
+# teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
+#wget http://KICK_HOST/kickstarts/Teeth-cloud-init
+#cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
+wget http://KICK_HOST/cloud-init/cloud-init-teeth-python2.deb
+dpkg -i *.deb
+apt-mark hold cloud-init
+
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_8_Teeth
-
-# teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-wget http://KICK_HOST/kickstarts/Teeth-cloud-init
-cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
 
 # another teeth specific
 echo "bonding" >> /etc/modules
@@ -103,6 +106,14 @@ EOF
 
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
+
+# cloud-init doesn't generate a ssh_host_ed25519_key
+cat > /etc/rc.local <<'EOF'
+#!/bin/bash
+dpkg-reconfigure openssh-server
+echo '#!/bin/bash' > /etc/rc.local
+echo 'exit 0' >> /etc/rc.local
+EOF
 
 # clean up
 passwd -d root
