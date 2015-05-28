@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# update all
+yum -y update
+yum -y upgrade
+
 # setup systemd to boot to the right runlevel
 echo -n "Setting default runlevel to multiuser text mode"
 rm -f /etc/systemd/system/default.target
@@ -43,17 +48,17 @@ EOF
 
 # For cloud images, 'eth0' _is_ the predictable device name, since
 # we don't want to be tied to specific virtual (!) hardware
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+#echo -n > /etc/udev/rules.d/70-persistent-net.rules
+#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
 
 # simple eth0 config, again not hard-coded to the build hardware
-cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
-DEVICE="eth0"
-BOOTPROTO="static"
-ONBOOT="yes"
-TYPE="Ethernet"
-EOF
+#cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
+#DEVICE="eth0"
+#BOOTPROTO="static"
+#ONBOOT="yes"
+#TYPE="Ethernet"
+#EOF
 
 # generic localhost names
 cat > /etc/hosts << EOF
@@ -89,9 +94,11 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
 #wget http://559bf13610f1c068ef67-1f39c9b68192359d629954d9e4642580.r76.cf2.rackcdn.com/cloud-init-0.7.5-14rackspace.x86_64.rpm
-wget http://KICK_HOST/cloud-init/cloud-init-teeth-cent6.rpm
+wget http://KICK_HOST/cloud-init/cloud-init-0.7.7-el6.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
+pip install pyserial
+chkconfig cloud-init on
 
 # more cloud-init logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
@@ -102,10 +109,6 @@ cat > /etc/fstab <<'EOF'
 LABEL=/ / ext3 errors=remount-ro,noatime 0 1
 EOF
 
-# update all
-yum -y update
-yum -y upgrade
-
 # another teeth specific
 cat > /etc/sysconfig/modules/onmetal.modules <<'EOF'
 #!/bin/sh
@@ -114,9 +117,9 @@ exec /sbin/modprobe 8021q >/dev/null 2>&1
 EOF
 chmod +x /etc/sysconfig/modules/onmetal.modules
 #
-#cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
-#blacklist mei_me
-#EOF
+cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
+blacklist mei_me
+EOF
 dracut -f
 
 # our cloud-init config
@@ -155,7 +158,7 @@ cloud_config_modules:
  - byobu
 
 # this bit scales some sysctl parameters to flavor type
-bootcmd:
+runcmd:
   - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf

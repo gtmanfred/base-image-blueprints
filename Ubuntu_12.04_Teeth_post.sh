@@ -2,15 +2,21 @@
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
 
+# update
+apt-get update
+apt-get -y --force-yes dist-upgrade
+
 # tmp tmp
 mkdir /tmp/tmp
 cd /tmp/tmp
 
 # custom cloud-init
 #wget https://be3c4d5274cd5307ce4a-fa55afd7e9be71a29fceec8b7b5e23fe.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
-wget http://KICK_HOST/cloud-init/cloud-init-teeth-python2.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_upstart.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
+
+pip install --upgrade six
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -28,7 +34,7 @@ system_info:
      gecos: Ubuntu
      shell: /bin/bash
 # this bit scales some sysctl parameters to flavor type
-bootcmd:
+runcmd:
   - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
@@ -41,8 +47,8 @@ EOF
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+#echo -n > /etc/udev/rules.d/70-persistent-net.rules
+#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 
 # cloud-init must be beaten with hammer
 # preseeding these values isnt working, forcing it here
@@ -112,7 +118,9 @@ cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
 blacklist mei_me
 blacklist mei
 EOF
-update-initramfs -u
+update-initramfs -u -k all
+sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
+sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
@@ -121,6 +129,7 @@ sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
+#echo 'GRUB_PRELOAD_MODULES="8021q bonding"' >> /etc/default/grub
 update-grub
 
 # setup a usable console
@@ -155,10 +164,6 @@ cat > /etc/apt/apt.conf.d/00InstallRecommends <<'EOF'
 APT::Install-Recommends "true";
 EOF
 
-# update
-apt-get update
-apt-get -y dist-upgrade
-
 # fsck no autorun on reboot
 sed -i 's/FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
@@ -170,7 +175,7 @@ bash package_postback.sh Ubuntu_12.04_Teeth
 passwd -d root
 passwd -l root
 apt-get -y clean
-apt-get -y autoremove
+#apt-get -y autoremove
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
@@ -178,7 +183,7 @@ rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
 # breaks newest nova-agent if removed
 #rm -f /etc/resolv.conf
-# this file copies the installer's /etc/network/interfaces to the VM 
+# this file copies the installer's /etc/network/interfaces to the VM
 # but we want to overwrite that with a "clean" file instead
 # so we must disable that copying action in kickstart/preseed
 rm -f /usr/lib/finish-install.d/55netcfg-copy-config

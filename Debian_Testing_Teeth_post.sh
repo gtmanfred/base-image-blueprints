@@ -3,6 +3,13 @@
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
 
+# teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
+#wget http://KICK_HOST/kickstarts/Teeth-cloud-init
+#cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_systemd.deb
+dpkg -i *.deb
+apt-mark hold cloud-init
+
 # Debian puts these in the wrong order from what we need
 # should be ConfigDrive, None but preseed populates with
 # None, Configdrive which breaks user-data scripts
@@ -27,7 +34,7 @@ system_info:
      gecos: Debian
      shell: /bin/bash
 # this bit scales some sysctl parameters to flavor type
-bootcmd:
+runcmd:
   - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
@@ -65,10 +72,6 @@ EOF
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
-# update
-#apt-get update
-#apt-get -y dist-upgrade
-
 # do this here so we have our mirror set
 cat > /etc/apt/sources.list <<'EOF'
 deb http://mirror.rackspace.com/debian stretch main
@@ -87,13 +90,6 @@ sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="8250.nr_uarts
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
-
-# teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-#wget http://KICK_HOST/kickstarts/Teeth-cloud-init
-#cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
-wget http://KICK_HOST/cloud-init/cloud-init-teeth-python2.deb
-dpkg -i *.deb
-apt-mark hold cloud-init
 
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
@@ -133,7 +129,7 @@ rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
-#rm -f /etc/resolv.conf
+echo "" > /etc/resolv.conf
 rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst

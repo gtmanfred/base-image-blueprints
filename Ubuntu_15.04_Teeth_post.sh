@@ -1,18 +1,26 @@
 #!/bin/bash
 
+# update
+apt-get update
+apt-get -y dist-upgrade
+
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
 
 # custom teeth cloud-init bit
 #wget https://e0399644aa2564da8102-cbe1f047c5bc5210015df7087c6eeb9e.ssl.cf5.rackcdn.com/cloud-init_0.7.5-1rackspace4_all.deb
-wget http://KICK_HOST/cloud-init/cloud-init-teeth-python3.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
+# breaks networking if missing
+#mkdir -p /run/network
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+#echo -n > /etc/udev/rules.d/70-persistent-net.rules
+#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+
 
 # cloud-init debug logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
@@ -32,7 +40,7 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
-bootcmd:
+runcmd:
   - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
   - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
@@ -71,10 +79,19 @@ EOF
 #echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
 #echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 
+# another teeth specific
+echo "bonding" >> /etc/modules
+echo "8021q" >> /etc/modules
+#echo 'OPTIONS="--hintpolicy=ignore"' >> /etc/default/irqbalance
+cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
+blacklist mei_me
+EOF
+update-initramfs -u
+
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-#sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS4,115200n8 cgroup_enable=memory swapaccount=1 splash quiet"/g' /etc/default/grub
+#sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
@@ -111,22 +128,9 @@ EOF
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
-# update
-apt-get update
-apt-get -y dist-upgrade
-
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_15.04_Teeth
-
-# another teeth specific
-echo "bonding" >> /etc/modules
-echo "8021q" >> /etc/modules
-echo 'OPTIONS="--hintpolicy=ignore"' >> /etc/default/irqbalance
-cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
-blacklist mei_me
-EOF
-update-initramfs -u
 
 # clean up
 passwd -d root
@@ -134,6 +138,10 @@ passwd -l root
 apt-get -y clean
 apt-get -y autoremove
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
+# this file copies the installer's /etc/network/interfaces to the VM
+# but we want to overwrite that with a "clean" file instead
+# so we must disable that copying action in kickstart/preseed
+rm -f /usr/lib/finish-install.d/55netcfg-copy-config
 rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
