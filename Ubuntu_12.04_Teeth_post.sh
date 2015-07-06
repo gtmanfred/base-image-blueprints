@@ -6,10 +6,6 @@ parted -s /dev/sda set 1 boot on
 apt-get update
 apt-get -y --force-yes dist-upgrade
 
-# tmp tmp
-mkdir /tmp/tmp
-cd /tmp/tmp
-
 # custom cloud-init
 #wget https://be3c4d5274cd5307ce4a-fa55afd7e9be71a29fceec8b7b5e23fe.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
 wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_upstart.deb
@@ -47,8 +43,8 @@ EOF
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-#echo -n > /etc/udev/rules.d/70-persistent-net.rules
-#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+echo -n > /etc/udev/rules.d/70-persistent-net.rules
+echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 
 # cloud-init must be beaten with hammer
 # preseeding these values isnt working, forcing it here
@@ -112,14 +108,14 @@ EOF
 #EOF
 
 # another teeth specific
-echo "bonding" >> /etc/modules
 echo "8021q" >> /etc/modules
+echo "bonding" >> /etc/modules
 cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
 blacklist mei_me
 blacklist mei
 EOF
 update-initramfs -u -k all
-sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
+#sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
 # keep grub2 from using UUIDs and regenerate config

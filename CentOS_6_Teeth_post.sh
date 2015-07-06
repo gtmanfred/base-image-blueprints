@@ -99,6 +99,7 @@ rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
 pip install pyserial
 chkconfig cloud-init on
+sed -i '/import sys/a reload(sys)\nsys.setdefaultencoding("Cp1252")' /usr/lib/python2.6/site-packages/configobj.py
 
 # more cloud-init logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
@@ -135,6 +136,7 @@ growpart:
   devices: ['/']
 system_info:
   distro: rhel
+  ssh_svcname: sshd
   default_user:
     name: root
     lock_passwd: True

@@ -119,8 +119,12 @@ StandardOutput=journal+console
 [Install]
 WantedBy=multi-user.target
 EOF
+systemctl enable xe-linux-distribution
 systemctl enable nova-agent
 systemctl enable cloud-init-local
+systemctl enable cloud-init
+systemctl enable cloud-config
+systemctl enable cloud-final
 
 # ssh permit rootlogin
 sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
@@ -140,7 +144,7 @@ bash package_postback.sh Debian_Unstable_PVHVM
 # clean up
 passwd -d root
 apt-get -y clean
-apt-get -y autoremove
+#apt-get -y autoremove
 rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin

@@ -95,8 +95,10 @@ CONFIG_LABEL=FreeBSD_10
 IMAGE_ID=$(curl -X GET -H 'Accept: text/plain' http://POSTBACK_HOST/api/image_id/$CONFIG_LABEL)
 /root/tmp/packages.sh > /root/tmp/packages.txt
 curl -X POST -H 'Accept: application/json' -H "Content-Type: application/json" -d "$(cat /root/tmp/packages.txt)" http://POSTBACK_HOST/api/pkg_info/$CONFIG_LABEL/$IMAGE_ID/pkg
-wget --no-check-certificate https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/v1.39.0/nova-agent-FreeBSD-amd64-1.39.0.tar.gz
-tar xzvf nova-agent-FreeBSD-amd64-1.39.0.tar.gz
+#wget --no-check-certificate https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/v1.39.0/nova-agent-FreeBSD-amd64-1.39.0.tar.gz
+#tar xzvf nova-agent-FreeBSD-amd64-1.39.0.tar.gz
+wget http://KICK_HOST/nova-agent/nova-agent-FreeBSD-amd64-1.39.1.tar.gz
+tar xzvf nova-agent-FreeBSD-amd64-1.39.1.tar.gz
 sh installer.sh
 # clean up
 rm -rf /root/tmp

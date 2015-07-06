@@ -49,6 +49,8 @@ runcmd:
   - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
   - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
   - sysctl -p
+bootcmd:
+  - /bin/sh -ec 'for i in $(ifquery --list --exclude lo --allow auto); do INTERFACES="$INTERFACES$i "; done; [ -n "$INTERFACES" ] || exit 0; while ! ifquery --state $INTERFACES >/dev/null; do sleep 1; done; for i in $INTERFACES; do while [ -e /run/network/ifup-$i.pid ]; do sleep 0.2; done; done'
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -123,6 +125,27 @@ stop on runlevel [!2345]
 
 respawn
 exec /sbin/getty -L 115200 ttyS4 xterm
+EOF
+
+cat > /etc/rc.local <<'EOF'
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+#
+### rackspace note ###
+# final network restart is a workaround for bug causing no network on reboot
+# hopefully this goes away one day, sorry
+/etc/init.d/networking restart
+exit 0
 EOF
 
 # fsck no autorun on reboot

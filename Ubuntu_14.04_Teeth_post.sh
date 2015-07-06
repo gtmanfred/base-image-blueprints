@@ -131,7 +131,7 @@ blacklist mei_me
 EOF
 depmod -a
 update-initramfs -u -k all
-sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
+#sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
 # clean up
