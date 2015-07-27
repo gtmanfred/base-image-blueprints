@@ -40,15 +40,6 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
-runcmd:
-  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
-  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
-  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
-  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
-  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
-  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
-  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
-  - sysctl -p
 bootcmd:
   - /bin/sh -ec 'for i in $(ifquery --list --exclude lo --allow auto); do INTERFACES="$INTERFACES$i "; done; [ -n "$INTERFACES" ] || exit 0; while ! ifquery --state $INTERFACES >/dev/null; do sleep 1; done; for i in $INTERFACES; do while [ -e /run/network/ifup-$i.pid ]; do sleep 0.2; done; done'
 EOF
@@ -80,6 +71,16 @@ EOF
 # set some stuff
 #echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
 #echo 'vm.swappiness = 0' >> /etc/sysctl.conf
+
+cat >> /etc/sysctl.conf <<'EOF'
+net.ipv4.tcp_rmem = 4096 87380 33554432
+net.ipv4.tcp_wmem = 4096 65536 33554432
+net.core.rmem_max = 33554432
+net.core.wmem_max = 33554432
+net.ipv4.tcp_window_scaling = 1
+net.ipv4.tcp_timestamps = 1
+net.ipv4.tcp_sack = 1
+EOF
 
 # another teeth specific
 echo "bonding" >> /etc/modules

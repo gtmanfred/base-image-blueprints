@@ -18,16 +18,6 @@ ssh_pwauth: True
 ssh_deletekeys: False
 resize_rootfs: noblock
 apt_preserve_sources_list: True
-# this bit scales some sysctl parameters to flavor type
-runcmd:
-  - echo "net.ipv4.tcp_rmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
-  - echo "net.ipv4.tcp_wmem = $(cat /proc/sys/net/ipv4/tcp_mem)" >> /etc/sysctl.conf
-  - echo "net.core.rmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
-  - echo "net.core.wmem_max = $(cat /proc/sys/net/ipv4/tcp_mem | awk {'print $3'})" >> /etc/sysctl.conf
-  - echo 'net.ipv4.tcp_window_scaling = 1' >> /etc/sysctl.conf
-  - echo 'net.ipv4.tcp_timestamps = 1' >> /etc/sysctl.conf
-  - echo 'net.ipv4.tcp_sack = 1' >> /etc/sysctl.conf
-  - sysctl -p
 EOF
 
 # cloud-init kludges
@@ -53,6 +43,16 @@ EOF
 # set some stuff
 echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
 echo 'vm.swappiness = 0' >> /etc/sysctl.conf
+
+cat >> /etc/sysctl.conf <<'EOF'
+net.ipv4.tcp_rmem = 4096 87380 33554432
+net.ipv4.tcp_wmem = 4096 65536 33554432
+net.core.rmem_max = 33554432
+net.core.wmem_max = 33554432
+net.ipv4.tcp_window_scaling = 1
+net.ipv4.tcp_timestamps = 1
+net.ipv4.tcp_sack = 1
+EOF
 
 # our fstab is fonky
 cat > /etc/fstab <<'EOF'
@@ -95,6 +95,28 @@ StandardOutput=journal+console
 WantedBy=multi-user.target
 EOF
 
+# this is broken upstream now, not sure why
+# but it's causing cloud-init services to start out of order and
+# is starting cloud-config first, which is not good
+cat > /lib/systemd/system/cloud-config.service <<'EOF'
+[Unit]
+Description=Apply the settings specified in cloud-config
+After=network.target syslog.target cloud-init.service
+Requires=cloud-init.service
+Wants=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/cloud-init modules --mode=config
+RemainAfterExit=yes
+TimeoutSec=0
+
+# Output needs to appear in instance console output
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
 # some systemd workarounds
 sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
