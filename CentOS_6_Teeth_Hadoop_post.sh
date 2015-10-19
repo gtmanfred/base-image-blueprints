@@ -73,18 +73,8 @@ echo "Disabling tmpfs for /tmp."
 systemctl mask tmp.mount
 
 # set some stuff
-#echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
+echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
 #echo 'vm.swappiness = 0' >> /etc/sysctl.conf
-
-cat >> /etc/sysctl.conf <<'EOF'
-net.ipv4.tcp_rmem = 4096 87380 33554432
-net.ipv4.tcp_wmem = 4096 65536 33554432
-net.core.rmem_max = 33554432
-net.core.wmem_max = 33554432
-net.ipv4.tcp_window_scaling = 1
-net.ipv4.tcp_timestamps = 1
-net.ipv4.tcp_sack = 1
-EOF
 
 # disable auto fsck on boot
 cat > /etc/sysconfig/autofsck << EOF
@@ -103,7 +93,7 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
-#wget http://559bf13610f1c068ef67-1f39c9b68192359d629954d9e4642580.r76.cf2.rackcdn.com/cloud-init-0.7.5-14rackspace.x86_64.rpm
+#wget http://KICK_HOST/cloud-init/cloud-init-0.7.5-14rackspace.x86_64.rpm
 wget http://KICK_HOST/cloud-init/cloud-init-0.7.7-el6.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
@@ -128,9 +118,9 @@ exec /sbin/modprobe 8021q >/dev/null 2>&1
 EOF
 chmod +x /etc/sysconfig/modules/onmetal.modules
 #
-cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
-blacklist mei_me
-EOF
+#cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
+#blacklist mei_me
+#EOF
 dracut -f
 
 # our cloud-init config
@@ -171,14 +161,13 @@ cloud_config_modules:
 EOF
 
 # force grub to use generic disk labels, bootloader above does not do this
-#sed -i 's%root=.*%root=LABEL=/ console=ttyS4,115200n8 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
 sed -i 's%root=.*%root=LABEL=/ 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
 sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=permissive/s' /etc/selinux/config
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh CentOS_6_Teeth
+wget http://KICK_HOST/kickstarts/CentOS_6_Teeth_Hadoop_post_onmetal.sh
+chmod +x CentOS_6_Teeth_Hadoop_post_onmetal.sh
+bash -x CentOS_6_Teeth_Hadoop_post_onmetal.sh
 
 # clean up
 yum clean all
@@ -196,3 +185,8 @@ rm -rf /tmp/tmp
 for k in $(find /tmp -type f); do rm -f $k; done
 for k in $(find /root -type f \( ! -iname ".*" \)); do rm -f $k; done
 for k in $(find /var/log -type f); do echo > $k; done
+
+echo "done done"
+# log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
+bash package_postback.sh CentOS_6_Teeth_Hadoop
