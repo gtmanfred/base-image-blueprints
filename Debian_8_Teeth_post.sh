@@ -33,6 +33,8 @@ system_info:
      lock_passwd: True
      gecos: Debian
      shell: /bin/bash
+mounts:
+ - [ ephemeral0, null ]
 EOF
 
 # cloud-init kludges
