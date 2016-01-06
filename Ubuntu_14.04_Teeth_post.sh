@@ -119,10 +119,6 @@ EOF
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Ubuntu_14.04_Teeth
-
 # another teeth specific
 echo "bonding" >> /etc/modules
 echo "8021q" >> /etc/modules
@@ -133,6 +129,21 @@ depmod -a
 update-initramfs -u -k all
 #sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
+
+# add support for Intel RSTe
+e2label /dev/md126p1 root
+# think this should already be done in kickstart:
+# apt-get install -y mdadm
+rm /etc/mdadm/mdadm.conf
+cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
+echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
+update-grub
+sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+update-initramfs -u
+
+# log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
+bash package_postback.sh Ubuntu_14.04_Teeth
 
 # clean up
 passwd -d root

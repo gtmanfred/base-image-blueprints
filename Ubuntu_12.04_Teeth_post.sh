@@ -163,6 +163,25 @@ EOF
 # fsck no autorun on reboot
 sed -i 's/FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
+# add support for Intel RSTe
+e2label /dev/md126p1 root
+# think this should already be done in kickstart:
+# apt-get install -y mdadm
+rm /etc/mdadm/mdadm.conf
+#cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
+echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
+update-grub
+sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+#todo: md raid rules
+#todo: remove copy mdam config
+#todo: add copy_exec
+#todo: mdam functions
+sed -i 's/BOOT_DEGRADED=false/BOOT_DEGRADED=true/g' /etc/initramfs-tools/conf.d/mdadm
+rm /usr/share/initramfs-tools/scripts/local-premount/mdadm
+#todo: init-premount mdam
+update-initramfs -u
+
+
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_12.04_Teeth

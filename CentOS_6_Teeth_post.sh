@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#centos 6 specific, pin the kernel by downloading old one and removing current version
+KERNELREMOVE=$(uname -r)
+rpm -ivh --oldpackage http://vault.centos.org/6.6/updates/x86_64/Packages/kernel-2.6.32-504.30.3.el6.x86_64.rpm
+rpm -e kernel-$KERNELREMOVE
+sed -i 's/'$KERNELREMOVE'/2.6.32-504.30.3.el6.x86_64/g' /boot/grub/grub.conf
+echo "exclude=kernel*" >> /etc/yum.conf
+
 # update all
 yum -y update
 yum -y upgrade
