@@ -82,6 +82,18 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
+# add support for Intel RSTe
+# note: may need to add in additional commands for v1 support
+e2label /dev/md126p1 root
+# think this should already be done in kickstart:
+# apt-get install -y mdadm
+rm /etc/mdadm/mdadm.conf
+cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
+echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
+echo "GRUB_RECORDFAIL_TIMEOUT=0" >> /etc/default/grub
+sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+# note: update-grub and update-initramfs will be done shortly
+
 # another teeth specific
 echo "bonding" >> /etc/modules
 echo "8021q" >> /etc/modules

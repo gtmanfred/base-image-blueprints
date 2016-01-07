@@ -8,6 +8,15 @@
 #                                                                             #
 ###############################################################################
 
+# make any command failure fatal
+set -e
+
+# automatically output all commands before executing them
+set -x
+
+# redirect all STDERR to STDOUT so it all shows up in the job logs
+exec 2>&1
+
 AMBARI_VERSION=${AMBARI_VERSION:-"2.1.1"}
 HDP_VERSION=${HDP_VERSION:-"2.3.0.0"}
 ES_HADOOP_VERSION=${ES_HADOOP_VERSION:-"2.1.0"}
@@ -15,26 +24,18 @@ MONGO_HADOOP_VERSION=${MONGO_HADOOP_VERSION:-"1.4.1"}
 
 
 function setup_repos() {
-    set -e
     wget -O /etc/yum.repos.d/ambari.repo http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/${AMBARI_VERSION}/ambari.repo
     wget -O /etc/yum.repos.d/hdp.repo http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/${HDP_VERSION}/hdp.repo
-
-    # Switch to our local mirror
-#    sed -i "s/public-repo-1.hortonworks.com/mirrors.dev.cbd.rackspace.com\/hortonworks/g" /etc/yum.repos.d/ambari.repo
-#    sed -i "s/public-repo-1.hortonworks.com/mirrors.dev.cbd.rackspace.com\/hortonworks/g" /etc/yum.repos.d/hdp.repo
-
-    cat <<EOF > /etc/yum.repos.d/rackspace-cbd.repo
-[rackspace-cbd]
-name=Rackspace-CBD-$releasever - Base
-baseurl=http://mirrors.dev.cbd.rackspace.com/cbd/rhel/
-gpgcheck=0
-EOF
-    set +e
+    wget -O /etc/yum.repos.d/cbd.repo http://mirrors.dev.cbd.rackspace.com/cbd.repo
 }
 
 function yum_refresh() {
     rm -rf /var/cache/yum
+
+    # if the fastestmirror plugin gets some 404s it exits non-zero even though it succeeds :(
+    set +e
     yum -y check-update
+    set -e
 }
 
 function yum_update() {
@@ -71,8 +72,7 @@ function install_hdp_dependencies() {
     # the bulk of Ambari install time is taken by these packages and their dependencies
     # since they don't include any actual services, just libraries, they're safe to pre-install
     echo "Pre-installing HDP packages"
-    # GANGLIA_MONITOR needs python-rrdtool and httpd and is on all nodes
-    yum install -y mysql-connector-java python-rrdtool yum-utils
+    yum install -y mysql-connector-java yum-utils
     yum_refresh
     yum install -y tez hadoop
     yum_refresh
@@ -152,8 +152,8 @@ function install_topo_script() {
 }
 
 function install_hadoop_extras() {
-    echo "Installing lzo"
-    yum -y install snappy snappy-devel hadoop-lzo lzo lzo-devel hadoop-lzo-native
+    echo "Installing hadoop extras"
+    yum -y install snappy snappy-devel
 }
 
 function install_hdfs_scp() {
@@ -162,7 +162,7 @@ function install_hdfs_scp() {
 }
 
 function cleanup() {
-    rm -f /etc/yum.repos.d/rackspace-cbd.repo
+    rm -f /etc/yum.repos.d/cbd.repo
     rm -f /etc/yum.repos.d/hdp.repo
     rm -f /var/lib/rpm/__db*
     rpm -v --rebuilddb
@@ -171,7 +171,6 @@ function cleanup() {
     yum -y check-update || true
 }
 
-
 echo "Building Ambari Image for Ambari Version: $AMBARI_VERSION, HDP Version: $HDP_VERSION"
 ambari_base_image_setup
 install_topo_script
@@ -179,3 +178,4 @@ install_hadoop_extras
 yum install -y ambari-agent
 install_hdfs_scp
 cleanup
+
