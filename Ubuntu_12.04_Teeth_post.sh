@@ -164,7 +164,7 @@ EOF
 sed -i 's/FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
 # add support for Intel RSTe
-e2label /dev/md126p1 root
+e2label /dev/sda1 root
 # think this should already be done in kickstart:
 # apt-get install -y mdadm
 rm /etc/mdadm/mdadm.conf
@@ -172,6 +172,7 @@ rm /etc/mdadm/mdadm.conf
 echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
 update-grub
 sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+sed -i 's#root=/dev/sda1#root=LABEL=root#g' /boot/grub/grub.cfg
 #todo: md raid rules
 #todo: remove copy mdam config
 #todo: add copy_exec
