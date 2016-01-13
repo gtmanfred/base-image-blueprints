@@ -84,7 +84,7 @@ EOF
 
 # add support for Intel RSTe
 # note: may need to add in additional commands for v1 support
-e2label /dev/md126p1 root
+e2label /dev/sda1 root
 # think this should already be done in kickstart:
 # apt-get install -y mdadm
 rm /etc/mdadm/mdadm.conf
@@ -111,6 +111,8 @@ sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
+# Fix grub config laid onto disk
+sed -i 's/root=\/dev\/sda1/root=LABEL=root/g' /boot/grub/grub.cfg
 
 # setup a usable console
 cat > /etc/init/ttyS0.conf <<'EOF'
