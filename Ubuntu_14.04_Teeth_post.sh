@@ -131,7 +131,7 @@ update-initramfs -u -k all
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
 # add support for Intel RSTe
-e2label /dev/md126p1 root
+e2label /dev/sda1 root
 # think this should already be done in kickstart:
 # apt-get install -y mdadm
 rm /etc/mdadm/mdadm.conf
@@ -139,6 +139,7 @@ cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
 echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
 update-grub
 sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+sed -i 's#root=/dev/sda1#root=LABEL=root#g' /boot/grub/grub.cfg
 update-initramfs -u
 
 # log packages
