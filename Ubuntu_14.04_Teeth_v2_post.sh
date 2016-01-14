@@ -130,9 +130,21 @@ update-initramfs -u -k all
 #sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
+# add support for Intel RSTe
+e2label /dev/sda1 root
+# think this should already be done in kickstart:
+# apt-get install -y mdadm
+rm /etc/mdadm/mdadm.conf
+cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
+echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
+update-grub
+sed -i 's#/dev/sda1#/dev/md126p1#g' /etc/fstab
+sed -i 's#root=/dev/sda1#root=/dev/md126p1#g' /boot/grub/grub.cfg
+update-initramfs -u
+
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Ubuntu_14.04_Teeth
+bash package_postback.sh Ubuntu_14.04_Teeth_v2
 
 # clean up
 passwd -d root
