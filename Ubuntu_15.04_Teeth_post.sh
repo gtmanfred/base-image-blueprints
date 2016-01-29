@@ -94,6 +94,12 @@ echo "GRUB_RECORDFAIL_TIMEOUT=0" >> /etc/default/grub
 sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
 # note: update-grub and update-initramfs will be done shortly
 
+# fix growpart for raid
+wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+chmod a+x /usr/bin/growpart
+
 # another teeth specific
 echo "bonding" >> /etc/modules
 echo "8021q" >> /etc/modules
@@ -101,7 +107,7 @@ echo "8021q" >> /etc/modules
 cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
 blacklist mei_me
 EOF
-update-initramfs -u
+update-initramfs -u -k all
 
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub

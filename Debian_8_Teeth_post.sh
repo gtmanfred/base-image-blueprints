@@ -2,6 +2,38 @@
 
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
+e2label /dev/sda1 root
+
+# replace the mdadm.conf w/ default universal config
+echo "CREATE owner=root group=disk mode=0660 auto=yes" > /etc/mdadm/mdadm.conf
+echo "HOMEHOST <system>" >> /etc/mdadm/mdadm.conf
+echo "MAILADDR root" >> /etc/mdadm/mdadm.conf
+
+cat > /etc/initramfs-tools/conf.d/mdadm<<'EOF'
+## mdadm boot_degraded configuration
+##
+BOOT_DEGRADED=true
+EOF
+
+# Fix mdadm config
+cp /usr/share/initramfs-tools/scripts/mdadm-functions /etc/initramfs-tools/scripts/
+cp /usr/share/initramfs-tools/hooks/mdadm /etc/initramfs-tools/hooks/
+cp /lib/udev/rules.d/64-md-raid-assembly.rules /etc/udev/rules.d/
+cp /lib/udev/rules.d/63-md-raid-arrays.rules /etc/udev/rules.d/
+
+wget http://KICK_HOST/misc/mdadm-init-deb -O /etc/initramfs-tools/scripts/local-top/mdadm
+chmod a+x /etc/initramfs-tools/scripts/local-top/mdadm 
+
+# Persist our custom udev rules for raid support
+cat > /etc/udev/rules.d/21-persistent-local.rules<<'EOF'
+KERNEL=="md*p1", SUBSYSTEM=="block", SYMLINK+="disk/by-label/root"
+KERNEL=="md*p2", SUBSYSTEM=="block", SYMLINK+="disk/by-label/config-2"
+EOF
+
+# Set udev rule to not add by-label symlinks for v2 blockdevs if not raid
+wget http://KICK_HOST/misc/60-persistent-storage.rules-deb7 -O /etc/udev/rules.d/60-persistent-storage.rules
+cat /etc/udev/rules.d/21-persistent-local.rules >> /etc/udev/rules.d/60-persistent-storage.rules
+update-initramfs -u
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
 #wget http://KICK_HOST/kickstarts/Teeth-cloud-init
@@ -71,6 +103,9 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
+# update fstab for labels
+sed -i 's$/dev/sda1$LABEL=root$g' /etc/fstab
+
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
@@ -82,11 +117,23 @@ sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="8250.nr_uarts=5 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
+echo 'GRUB_DEVICE_LABEL=root' >> /etc/default/grub
 update-grub
 
-# log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Debian_8_Teeth
+# TODO: make update-grub persist label boot
+sed -i 's#/dev/sda1#LABEL=root#g' /boot/grub/grub.cfg
+
+#add this to make sure it gets copied to initrd
+echo "INITRDSTART='all'" >> /etc/default/mdadm
+
+echo "sleep 9" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
+chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
+
+# fix growpart for raid
+wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+chmod a+x /usr/bin/growpart
 
 # another teeth specific
 echo "bonding" >> /etc/modules
@@ -94,7 +141,7 @@ echo "8021q" >> /etc/modules
 cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
 blacklist mei_me
 EOF
-update-initramfs -u
+update-initramfs -u -k all
 
 # more teeth console changes
 cat >> /etc/inittab <<'EOF'
@@ -112,6 +159,10 @@ dpkg-reconfigure openssh-server
 echo '#!/bin/bash' > /etc/rc.local
 echo 'exit 0' >> /etc/rc.local
 EOF
+
+# log packages
+wget http://KICK_HOST/kickstarts/package_postback.sh
+bash package_postback.sh Debian_8_Teeth
 
 # clean up
 passwd -d root

@@ -6,6 +6,10 @@ apt-get -y dist-upgrade
 
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
+e2label /dev/sda1 root
+
+# Remove mdadm conf for universal
+rm /etc/mdadm/mdadm.conf
 
 # custom teeth cloud-init bit
 #wget https://244cb001e7940f815e7d-eed332c78fa1ec49f5728fa74ebb315e.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
@@ -77,6 +81,10 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
+# Grub fixups
+cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
+echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
+
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
@@ -87,6 +95,20 @@ sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 #echo 'GRUB_PRELOAD_MODULES="8021q bonding"' >> /etc/default/grub
 update-grub
+
+# TODO: make update-grub generate root=LABEL=root configs
+sed -i 's#/dev/sda1#LABEL=root#g' /boot/grub/grub.cfg
+sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+
+# Make sure mdadm hooks gets copied to initrd
+echo "INITRDSTART='all'" >> /etc/default/mdadm
+
+# Set udev rule to not add by-label symlinks for v2 blockdevs if not raid
+wget http://KICK_HOST/misc/60-persistent-storage.rules -O /etc/udev/rules.d/60-persistent-storage.rules
+
+# The root delay kernel param borked some time ago so wee need to manually do it.
+echo "sleep 5" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
+chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 
 # setup a usable console
 cat > /etc/init/ttyS0.conf <<'EOF'
@@ -118,6 +140,12 @@ EOF
 
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
+
+# fix growpart for raid
+wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+chmod a+x /usr/bin/growpart
 
 # another teeth specific
 echo "bonding" >> /etc/modules

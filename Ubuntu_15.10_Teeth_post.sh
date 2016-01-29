@@ -8,16 +8,19 @@ apt-get -y dist-upgrade
 parted -s /dev/sda set 1 boot on
 
 # custom teeth cloud-init bit
-#wget https://244cb001e7940f815e7d-eed332c78fa1ec49f5728fa74ebb315e.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_upstart.deb
+#wget https://e0399644aa2564da8102-cbe1f047c5bc5210015df7087c6eeb9e.ssl.cf5.rackcdn.com/cloud-init_0.7.5-1rackspace4_all.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
+# breaks networking if missing
+#mkdir -p /run/network
 
 # cloud-init kludges
 addgroup --system --quiet netdev
 #echo -n > /etc/udev/rules.d/70-persistent-net.rules
 #echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-#echo -n > /etc/udev/rules.d/80-net-name-slot.rules
+#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+
 
 # cloud-init debug logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
@@ -37,6 +40,8 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
+bootcmd:
+  - /bin/sh -ec 'for i in $(ifquery --list --exclude lo --allow auto); do INTERFACES="$INTERFACES$i "; done; [ -n "$INTERFACES" ] || exit 0; while ! ifquery --state $INTERFACES >/dev/null; do sleep 1; done; for i in $INTERFACES; do while [ -e /run/network/ifup-$i.pid ]; do sleep 0.2; done; done'
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -77,16 +82,43 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
+# add support for Intel RSTe
+# note: may need to add in additional commands for v1 support
+e2label /dev/sda1 root
+# think this should already be done in kickstart:
+# apt-get install -y mdadm
+rm /etc/mdadm/mdadm.conf
+cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
+echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
+echo "GRUB_RECORDFAIL_TIMEOUT=0" >> /etc/default/grub
+sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
+# note: update-grub and update-initramfs will be done shortly
+
+# fix growpart for raid
+wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+chmod a+x /usr/bin/growpart
+
+# another teeth specific
+echo "bonding" >> /etc/modules
+echo "8021q" >> /etc/modules
+#echo 'OPTIONS="--hintpolicy=ignore"' >> /etc/default/irqbalance
+cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
+blacklist mei_me
+EOF
+update-initramfs -u -k all
+
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-#sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS4,115200n8 cgroup_enable=memory swapaccount=1 splash quiet"/g' /etc/default/grub
 #sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
-#echo 'GRUB_PRELOAD_MODULES="8021q bonding"' >> /etc/default/grub
 update-grub
+# Fix grub config laid onto disk
+sed -i 's/root=\/dev\/sda1/root=LABEL=root/g' /boot/grub/grub.cfg
 
 # setup a usable console
 cat > /etc/init/ttyS0.conf <<'EOF'
@@ -116,41 +148,39 @@ respawn
 exec /sbin/getty -L 115200 ttyS4 xterm
 EOF
 
+cat > /etc/rc.local <<'EOF'
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+#
+### rackspace note ###
+# final network restart is a workaround for bug causing no network on reboot
+# hopefully this goes away one day, sorry
+/etc/init.d/networking restart
+exit 0
+EOF
+
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
-# another teeth specific
-echo "bonding" >> /etc/modules
-echo "8021q" >> /etc/modules
-cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
-blacklist mei_me
-EOF
-depmod -a
-update-initramfs -u -k all
-#sed -i 's/start on.*/start on net-device-added and filesystem/g' /etc/init/network-interface.conf
-sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
-
-# add support for Intel RSTe
-e2label /dev/sda1 root
-# think this should already be done in kickstart:
-# apt-get install -y mdadm
-rm /etc/mdadm/mdadm.conf
-cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
-echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
-update-grub
-sed -i 's#/dev/sda1#/dev/md126p1#g' /etc/fstab
-sed -i 's#root=/dev/sda1#root=/dev/md126p1#g' /boot/grub/grub.cfg
-update-initramfs -u
-
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh Ubuntu_14.04_Teeth_v2
+bash package_postback.sh Ubuntu_15.10_Teeth
 
 # clean up
 passwd -d root
 passwd -l root
 apt-get -y clean
-#apt-get -y autoremove
+apt-get -y autoremove
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 # this file copies the installer's /etc/network/interfaces to the VM
 # but we want to overwrite that with a "clean" file instead
