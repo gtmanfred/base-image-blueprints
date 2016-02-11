@@ -91,6 +91,7 @@ net.core.wmem_max = 33554432
 net.ipv4.tcp_window_scaling = 1
 net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
+vm.dirty_ratio=5
 EOF
 
 # disable auto fsck on boot
@@ -179,7 +180,7 @@ EOF
 
 # force grub to use generic disk labels, bootloader above does not do this
 #sed -i 's%root=.*%root=LABEL=/ console=ttyS4,115200n8 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
-sed -i 's%root=.*%root=LABEL=/ 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux=0%g' /boot/grub/grub.conf
+sed -i 's%root=.*%root=LABEL=/ 8250.nr_uarts=5 modprobe.blacklist=mei_me acpi=off noapic selinux=0%g' /boot/grub/grub.conf
 sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=permissive/s' /etc/selinux/config
 
