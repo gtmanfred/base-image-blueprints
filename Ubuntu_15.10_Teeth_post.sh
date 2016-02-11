@@ -80,6 +80,7 @@ net.core.wmem_max = 33554432
 net.ipv4.tcp_window_scaling = 1
 net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
+vm.dirty_ratio=5
 EOF
 
 # add support for Intel RSTe
@@ -95,10 +96,10 @@ sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
 # note: update-grub and update-initramfs will be done shortly
 
 # fix growpart for raid
-wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
-chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
-wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
-chmod a+x /usr/bin/growpart
+#wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+#chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
+#wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+#chmod a+x /usr/bin/growpart
 
 # another teeth specific
 echo "bonding" >> /etc/modules
@@ -113,12 +114,13 @@ update-initramfs -u -k all
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
 #sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=off noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
 # Fix grub config laid onto disk
-sed -i 's/root=\/dev\/sda1/root=LABEL=root/g' /boot/grub/grub.cfg
+sed -i 's/root=\/dev\/sda1 ro/root=LABEL=root ro acpi=off noapici rd.fstab=no/g' /boot/grub/grub.cfg
+sed -i 's/root=\/dev\/sda1/root=LABEL=root/g'
 
 # setup a usable console
 cat > /etc/init/ttyS0.conf <<'EOF'

@@ -98,6 +98,7 @@ net.core.wmem_max = 33554432
 net.ipv4.tcp_window_scaling = 1
 net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
+vm.dirty_ratio=5
 EOF
 
 # keep grub2 from using UUIDs and regenerate config
@@ -105,7 +106,7 @@ sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/defa
 #sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=console/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
 #sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="console=ttyS4,115200n8 8250.nr_uarts=5 splash quiet"/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="8250.nr_uarts=5 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="rd.fstab=no acpi=off noapic 8250.nr_uarts=5 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
@@ -120,10 +121,10 @@ echo "sleep 9" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 
 # fix growpart for raid
-wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
-chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
-wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
-chmod a+x /usr/bin/growpart
+#wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+#chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
+#wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+#chmod a+x /usr/bin/growpart
 
 # another teeth specific
 echo "bonding" >> /etc/modules
