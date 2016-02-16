@@ -41,6 +41,27 @@ system_info:
      lock_passwd: True
      gecos: Ubuntu
      shell: /bin/bash
+
+cloud_config_modules:
+ - emit_upstart
+ - disk_setup
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - snappy
+ - grub-dpkg
+ - apt-pipelining
+ - apt-configure
+ - package-update-upgrade-install
+ - landscape
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -112,32 +133,32 @@ echo "sleep 5" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 
 # setup a usable console
-cat > /etc/init/ttyS0.conf <<'EOF'
+#cat > /etc/init/ttyS0.conf <<'EOF'
 # ttyS0 - getty
 #
 # This service maintains a getty on ttyS1 from the point the system is
 # started until it is shut down again.
 
-start on stopped rc RUNLEVEL=[2345]
-stop on runlevel [!2345]
+#start on stopped rc RUNLEVEL=[2345]
+#stop on runlevel [!2345]
 
-respawn
-exec /sbin/getty -L 115200 ttyS0 xterm
-EOF
+#respawn
+#exec /sbin/getty -L 115200 ttyS0 xterm
+#EOF
 
 # setup a usable console
-cat > /etc/init/ttyS4.conf <<'EOF'
+#cat > /etc/init/ttyS4.conf <<'EOF'
 # ttyS4 - getty
 #
 # This service maintains a getty on ttyS1 from the point the system is
 # started until it is shut down again.
 
-start on stopped rc RUNLEVEL=[2345]
-stop on runlevel [!2345]
+#start on stopped rc RUNLEVEL=[2345]
+#stop on runlevel [!2345]
 
-respawn
-exec /sbin/getty -L 115200 ttyS4 xterm
-EOF
+#respawn
+#exec /sbin/getty -L 115200 ttyS4 xterm
+#EOF
 
 # fsck no autorun on reboot
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS

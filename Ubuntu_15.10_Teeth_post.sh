@@ -42,6 +42,27 @@ system_info:
      shell: /bin/bash
 bootcmd:
   - /bin/sh -ec 'for i in $(ifquery --list --exclude lo --allow auto); do INTERFACES="$INTERFACES$i "; done; [ -n "$INTERFACES" ] || exit 0; while ! ifquery --state $INTERFACES >/dev/null; do sleep 1; done; for i in $INTERFACES; do while [ -e /run/network/ifup-$i.pid ]; do sleep 0.2; done; done'
+
+cloud_config_modules:
+ - emit_upstart
+ - disk_setup
+ - ssh-import-id
+ - locale
+ - set-passwords
+ - snappy
+ - grub-dpkg
+ - apt-pipelining
+ - apt-configure
+ - package-update-upgrade-install
+ - landscape
+ - timezone
+ - puppet
+ - chef
+ - salt-minion
+ - mcollective
+ - disable-ec2-metadata
+ - runcmd
+ - byobu
 EOF
 
 # preseeds/debconf do not work for this anymore :(
@@ -119,7 +140,7 @@ sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 #echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
 # Fix grub config laid onto disk
-sed -i 's/root=\/dev\/sda1 ro/root=LABEL=root ro acpi=off noapici rd.fstab=no/g' /boot/grub/grub.cfg
+#sed -i 's/root=\/dev\/sda1 ro/root=LABEL=root ro acpi=off noapici rd.fstab=no/g' /boot/grub/grub.cfg
 sed -i 's/root=\/dev\/sda1/root=LABEL=root/g'
 
 # setup a usable console
