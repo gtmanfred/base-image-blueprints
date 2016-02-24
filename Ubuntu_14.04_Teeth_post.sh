@@ -190,10 +190,6 @@ passwd -l root
 apt-get -y clean
 #apt-get -y autoremove
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
-# this file copies the installer's /etc/network/interfaces to the VM
-# but we want to overwrite that with a "clean" file instead
-# so we must disable that copying action in kickstart/preseed
-rm -f /usr/lib/finish-install.d/55netcfg-copy-config
 rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
