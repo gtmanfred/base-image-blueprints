@@ -12,14 +12,15 @@ parted -s /dev/sda set 1 boot on
 wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
+
 # breaks networking if missing
-#mkdir -p /run/network
+mkdir -p /run/network
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-#echo -n > /etc/udev/rules.d/70-persistent-net.rules
-#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+echo -n > /etc/udev/rules.d/70-persistent-net.rules
+echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
 
 
 # cloud-init debug logging
@@ -89,10 +90,6 @@ ff02::2 ip6-allrouters
 127.0.0.1 localhost
 EOF
 
-# set some stuff
-#echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
-#echo 'vm.swappiness = 0' >> /etc/sysctl.conf
-
 cat >> /etc/sysctl.conf <<'EOF'
 net.ipv4.tcp_rmem = 4096 87380 33554432
 net.ipv4.tcp_wmem = 4096 65536 33554432
@@ -105,22 +102,13 @@ vm.dirty_ratio=5
 EOF
 
 # add support for Intel RSTe
-# note: may need to add in additional commands for v1 support
 e2label /dev/sda1 root
-# think this should already be done in kickstart:
-# apt-get install -y mdadm
 rm /etc/mdadm/mdadm.conf
 cat /dev/null > /etc/default/grub.d/dmraid2mdadm.cfg
 echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
 echo "GRUB_RECORDFAIL_TIMEOUT=0" >> /etc/default/grub
 sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
 # note: update-grub and update-initramfs will be done shortly
-
-# fix growpart for raid
-#wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
-#chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
-#wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
-#chmod a+x /usr/bin/growpart
 
 # another teeth specific
 echo "bonding" >> /etc/modules
@@ -134,42 +122,12 @@ update-initramfs -u -k all
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-#sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0 cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=off noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0 acpi=off noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
-#echo 'GRUB_SERIAL_COMMAND="serial --unit=0 --speed=115200n8 --word=8 --parity=no --stop=1"' >> /etc/default/grub
 update-grub
+
 # Fix grub config laid onto disk
-#sed -i 's/root=\/dev\/sda1 ro/root=LABEL=root ro acpi=off noapici rd.fstab=no/g' /boot/grub/grub.cfg
-sed -i 's/root=\/dev\/sda1/root=LABEL=root/g'
-
-# setup a usable console
-cat > /etc/init/ttyS0.conf <<'EOF'
-# ttyS0 - getty
-#
-# This service maintains a getty on ttyS1 from the point the system is
-# started until it is shut down again.
-
-start on stopped rc RUNLEVEL=[2345]
-stop on runlevel [!2345]
-
-respawn
-exec /sbin/getty -L 115200 ttyS0 xterm
-EOF
-
-# setup a usable console
-cat > /etc/init/ttyS4.conf <<'EOF'
-# ttyS4 - getty
-#
-# This service maintains a getty on ttyS1 from the point the system is
-# started until it is shut down again.
-
-start on stopped rc RUNLEVEL=[2345]
-stop on runlevel [!2345]
-
-respawn
-exec /sbin/getty -L 115200 ttyS4 xterm
-EOF
+sed -i 's/root=\/dev\/sda1/root=LABEL=root/g' /boot/grub/grub.cfg
 
 cat > /etc/rc.local <<'EOF'
 #!/bin/sh -e
