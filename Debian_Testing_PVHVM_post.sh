@@ -143,7 +143,7 @@ deb-src http://mirror.rackspace.com/debian-security/ stretch/updates main
 EOF
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Debian_Testing_PVHVM
 
 # clean up

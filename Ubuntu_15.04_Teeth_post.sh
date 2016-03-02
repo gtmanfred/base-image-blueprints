@@ -9,7 +9,7 @@ parted -s /dev/sda set 1 boot on
 
 # custom teeth cloud-init bit
 #wget https://e0399644aa2564da8102-cbe1f047c5bc5210015df7087c6eeb9e.ssl.cf5.rackcdn.com/cloud-init_0.7.5-1rackspace4_all.deb
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_systemd.deb
+wget http://10.69.246.205/cloud-init/cloud-init_0.7.7_systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 # breaks networking if missing
@@ -95,9 +95,9 @@ sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
 # note: update-grub and update-initramfs will be done shortly
 
 # fix growpart for raid
-wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://10.69.246.205/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
 chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
-wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+wget http://10.69.246.205/misc/growpart -O /usr/bin/growpart
 chmod a+x /usr/bin/growpart
 
 # another teeth specific
@@ -173,7 +173,7 @@ EOF
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_15.04_Teeth
 
 # clean up

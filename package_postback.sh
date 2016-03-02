@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-HOST="POSTBACK_HOST"
+HOST="10.69.246.81"
 IMAGE_ID=$(curl -X GET -H 'Accept: text/plain' http://$HOST/api/image_id/$1)
 
 if [ -e "/usr/bin/dpkg" ]

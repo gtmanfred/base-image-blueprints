@@ -25,7 +25,7 @@ cd /tmp/tmp
 # install agent
 #wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent_1.39.1_all.deb
 #dpkg -i nova-agent_1.39.1_all.deb
-wget http://KICK_HOST/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
+wget http://10.69.246.205/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
 tar xzvf nova-agent*tar.gz
 sh installer.sh
 # 10.04 won't add startup scripts properly, forcing it
@@ -163,7 +163,7 @@ xvc0
 EOF
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_10.04
 
 # clean up

@@ -12,7 +12,7 @@ rm /etc/mdadm/mdadm.conf
 
 # custom cloud-init
 #wget https://be3c4d5274cd5307ce4a-fa55afd7e9be71a29fceec8b7b5e23fe.ssl.cf2.rackcdn.com/cloud-init_0.7.5-1rackspace5_all.deb
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_upstart.deb
+wget http://10.69.246.205/cloud-init/cloud-init_0.7.7_upstart.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -182,14 +182,14 @@ echo "INITRDSTART='all'" >> /etc/default/mdadm
 sed -i 's/BOOT_DEGRADED=false/BOOT_DEGRADED=true/g' /etc/initramfs-tools/conf.d/mdadm
 
 # Set udev rule to not add by-label symlinks for v2 blockdevs if not raid
-wget http://KICK_HOST/misc/60-persistent-storage.rules -O /etc/udev/rules.d/60-persistent-storage.rules
+wget http://10.69.246.205/misc/60-persistent-storage.rules -O /etc/udev/rules.d/60-persistent-storage.rules
 
 echo "sleep 5" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 update-initramfs -u -k all
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_12.04_Teeth
 
 # clean up

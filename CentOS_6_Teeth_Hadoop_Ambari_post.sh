@@ -3,12 +3,12 @@
 yum -y update
 yum -y upgrade
 
-wget http://KICK_HOST/kickstarts/CentOS_6_Teeth_Hadoop_post_ambari.sh
+wget http://10.69.246.205/kickstarts/CentOS_6_Teeth_Hadoop_post_ambari.sh
 chmod +x CentOS_6_Teeth_Hadoop_post_ambari.sh
 bash -x CentOS_6_Teeth_Hadoop_post_ambari.sh
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash -x package_postback.sh CentOS_6_Teeth_Hadoop_Ambari
 
 # setup systemd to boot to the right runlevel
@@ -100,8 +100,8 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
-#wget http://KICK_HOST/cloud-init/cloud-init-0.7.5-14rackspace.x86_64.rpm
-wget http://KICK_HOST/cloud-init/cloud-init-0.7.7-el6.rpm
+#wget http://10.69.246.205/cloud-init/cloud-init-0.7.5-14rackspace.x86_64.rpm
+wget http://10.69.246.205/cloud-init/cloud-init-0.7.7-el6.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
 pip install pyserial

@@ -112,7 +112,7 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
 #wget http://559bf13610f1c068ef67-1f39c9b68192359d629954d9e4642580.r76.cf2.rackcdn.com/cloud-init-0.7.5-14rackspace.x86_64.rpm
-wget http://KICK_HOST/cloud-init/cloud-init-0.7.7-el6.rpm
+wget http://10.69.246.205/cloud-init/cloud-init-0.7.7-el6.fc22.noarch.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
 pip install pyserial
@@ -185,7 +185,7 @@ sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=permissive/s' /etc/selinux/config
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh CentOS_6_Teeth
 
 # clean up

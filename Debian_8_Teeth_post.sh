@@ -21,7 +21,7 @@ cp /usr/share/initramfs-tools/hooks/mdadm /etc/initramfs-tools/hooks/
 cp /lib/udev/rules.d/64-md-raid-assembly.rules /etc/udev/rules.d/
 cp /lib/udev/rules.d/63-md-raid-arrays.rules /etc/udev/rules.d/
 
-wget http://KICK_HOST/misc/mdadm-init-deb -O /etc/initramfs-tools/scripts/local-top/mdadm
+wget http://10.69.246.205/misc/mdadm-init-deb -O /etc/initramfs-tools/scripts/local-top/mdadm
 chmod a+x /etc/initramfs-tools/scripts/local-top/mdadm 
 
 # Persist our custom udev rules for raid support
@@ -31,14 +31,14 @@ KERNEL=="md*p2", SUBSYSTEM=="block", SYMLINK+="disk/by-label/config-2"
 EOF
 
 # Set udev rule to not add by-label symlinks for v2 blockdevs if not raid
-wget http://KICK_HOST/misc/60-persistent-storage.rules-deb7 -O /etc/udev/rules.d/60-persistent-storage.rules
+wget http://10.69.246.205/misc/60-persistent-storage.rules-deb7 -O /etc/udev/rules.d/60-persistent-storage.rules
 cat /etc/udev/rules.d/21-persistent-local.rules >> /etc/udev/rules.d/60-persistent-storage.rules
 update-initramfs -u
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-#wget http://KICK_HOST/kickstarts/Teeth-cloud-init
+#wget http://10.69.246.205/kickstarts/Teeth-cloud-init
 #cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_systemd.deb
+wget http://10.69.246.205/cloud-init/cloud-init_0.7.7-py3.4-systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -131,9 +131,9 @@ echo "sleep 9" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 
 # fix growpart for raid
-wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://10.69.246.205/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
 chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
-wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
+wget http://10.69.246.205/misc/growpart -O /usr/bin/growpart
 chmod a+x /usr/bin/growpart
 
 # another teeth specific
@@ -162,7 +162,7 @@ echo 'exit 0' >> /etc/rc.local
 EOF
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Debian_8_Teeth
 
 # clean up

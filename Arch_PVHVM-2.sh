@@ -144,7 +144,7 @@ vername=$(echo $dirname|cut -d "-" -f 2)
 tar -xJf $filename
 cd $dirname
 make mrproper
-wget http://KICK_HOST/kickstarts/Arch_PVHVM_kernel_config
+wget http://10.69.246.205/kickstarts/Arch_PVHVM_kernel_config
 mv Arch_PVHVM_kernel_config .config
 make olddefconfig
 make && make modules_install
@@ -176,7 +176,7 @@ systemctl enable sshd
 pacman -Syu --noconfirm
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Arch_PVHVM
 
 # guest utilities kludge

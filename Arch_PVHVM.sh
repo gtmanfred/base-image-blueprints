@@ -32,7 +32,7 @@ mount -t proc none /mnt/arch/proc
 mount --rbind /sys /mnt/arch/sys
 mount --rbind /dev /mnt/arch/dev
 mount --rbind /run /mnt/arch/run
-wget http://KICK_HOST/kickstarts/Arch_PVHVM-2.sh
+wget http://10.69.246.205/kickstarts/Arch_PVHVM-2.sh
 chmod +x Arch_PVHVM-2.sh
 chroot /mnt/arch /bin/bash -c "/Arch_PVHVM-2.sh"
 

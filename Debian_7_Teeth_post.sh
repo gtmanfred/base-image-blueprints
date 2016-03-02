@@ -21,7 +21,7 @@ cp /usr/share/initramfs-tools/hooks/mdadm /etc/initramfs-tools/hooks/
 cp /lib/udev/rules.d/64-md-raid-assembly.rules /etc/udev/rules.d/
 cp /lib/udev/rules.d/63-md-raid-arrays.rules /etc/udev/rules.d/
 
-wget http://KICK_HOST/misc/mdadm-init-deb -O /etc/initramfs-tools/scripts/local-top/mdadm
+wget http://10.69.246.205/misc/mdadm-init-deb -O /etc/initramfs-tools/scripts/local-top/mdadm
 chmod a+x /etc/initramfs-tools/scripts/local-top/mdadm
 
 cat > /etc/udev/rules.d/21-persistent-local.rules<<'EOF'
@@ -30,14 +30,14 @@ KERNEL=="md*p2", SUBSYSTEM=="block", SYMLINK+="disk/by-label/config-2"
 EOF
 
 # Set udev rule to not add by-label symlinks for v2 blockdevs if not raid
-wget http://KICK_HOST/misc/60-persistent-storage.rules-deb7 -O /etc/udev/rules.d/60-persistent-storage.rules
+wget http://10.69.246.205/misc/60-persistent-storage.rules-deb7 -O /etc/udev/rules.d/60-persistent-storage.rules
 cat /etc/udev/rules.d/21-persistent-local.rules >> /etc/udev/rules.d/60-persistent-storage.rules
 update-initramfs -u
 
 # teeth cloud-init workaround, hopefully goes away with upstream cloud-init changes?
-#wget http://KICK_HOST/kickstarts/Teeth-cloud-init
+#wget http://10.69.246.205/kickstarts/Teeth-cloud-init
 #cp Teeth-cloud-init /usr/share/pyshared/cloudinit/sources/DataSourceConfigDrive.py
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7_deb7.deb
+wget http://10.69.246.205/cloud-init/cloud-init_0.7.7_deb7.deb
 dpkg -i --force-all *.deb
 apt-mark hold cloud-init
 
@@ -171,7 +171,7 @@ chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 update-initramfs -u -k all
 
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Debian_7_Teeth
 
 # fsck no autorun on reboot
