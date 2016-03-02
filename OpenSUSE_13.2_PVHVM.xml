@@ -472,7 +472,7 @@ EOF
 chmod +x /etc/init.d/network
 
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh OpenSUSE_13.2_PVHVM
 
 passwd -d root

@@ -389,7 +389,7 @@ apt-get update
 apt-get -y dist-upgrade
 
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Debian_6
 
 # clean up

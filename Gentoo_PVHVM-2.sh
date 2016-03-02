@@ -57,7 +57,7 @@ rc-update add sshd default
 # kernel recompile
 emerge gentoo-sources
 cd /usr/src/linux
-wget http://10.69.246.205/kickstarts/Gentoo_PVHVM_kernel_config
+wget http://KICK_HOST/kickstarts/Gentoo_PVHVM_kernel_config
 mv Gentoo_PVHVM_kernel_config .config
 make olddefconfig
 make  && make modules_install
@@ -141,7 +141,7 @@ rc-update add xe-daemon default
 # install agent
 mkdir /root/nova-agent
 cd /root/nova-agent
-wget http://10.69.246.205/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
+wget http://KICK_HOST/nova-agent/nova-agent-Linux-x86_64-1.39.1.tar.gz
 tar xzvf nova-agent-Linux-x86_64-1.39.1.tar.gz
 sh installer.sh
 rc-update del nova-agent default
@@ -240,7 +240,7 @@ sleep 5
 sed -i 's?export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"?export PYTHONHOME="$NOVA_PYTHONPATH:$PYTHONPATH"\n\nconfig="/etc/conf.d/nova-agent"\nif [ -f "$config" ]\nthen\n  source $config\nfi?g' /etc/init.d/nova-agent
 
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Gentoo_PVHVM
 
 # clean up

@@ -93,8 +93,8 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
-#wget http://10.69.246.205/cloud-init/cloud-init-0.7.5-14rackspace.x86_64.rpm
-wget http://10.69.246.205/cloud-init/cloud-init-0.7.7-el6.rpm
+#wget http://KICK_HOST/cloud-init/cloud-init-0.7.5-14rackspace.x86_64.rpm
+wget http://KICK_HOST/cloud-init/cloud-init-0.7.7-el6.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
 pip install pyserial
@@ -165,7 +165,7 @@ sed -i 's%root=.*%root=LABEL=/ 8250.nr_uarts=5 modprobe.blacklist=mei_me selinux
 sed -i '/splashimage/d' /boot/grub/grub.conf
 sed -i 'g/SELINUX=*/SELINUX=permissive/s' /etc/selinux/config
 
-wget http://10.69.246.205/kickstarts/CentOS_6_Teeth_Hadoop_post_onmetal.sh
+wget http://KICK_HOST/kickstarts/CentOS_6_Teeth_Hadoop_post_onmetal.sh
 chmod +x CentOS_6_Teeth_Hadoop_post_onmetal.sh
 bash -x CentOS_6_Teeth_Hadoop_post_onmetal.sh
 
@@ -188,5 +188,5 @@ for k in $(find /var/log -type f); do echo > $k; done
 
 echo "done done"
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh CentOS_6_Teeth_Hadoop

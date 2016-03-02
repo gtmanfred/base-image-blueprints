@@ -12,7 +12,7 @@ e2label /dev/sda1 root
 rm /etc/mdadm/mdadm.conf
 
 # custom teeth cloud-init bit
-wget http://10.69.246.205/cloud-init/cloud-init_0.7.7-py3.4-upstart.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py3.4-upstart.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
@@ -117,7 +117,7 @@ sed -i 's#/dev/sda1#LABEL=root#g' /etc/fstab
 echo "INITRDSTART='all'" >> /etc/default/mdadm
 
 # Set udev rule to not add by-label symlinks for v2 blockdevs if not raid
-wget http://10.69.246.205/misc/60-persistent-storage.rules -O /etc/udev/rules.d/60-persistent-storage.rules
+wget http://KICK_HOST/misc/60-persistent-storage.rules -O /etc/udev/rules.d/60-persistent-storage.rules
 
 # The root delay kernel param borked some time ago so wee need to manually do it.
 echo "sleep 5" > /etc/initramfs-tools/scripts/init-premount/delay_for_raid
@@ -127,9 +127,9 @@ chmod a+x /etc/initramfs-tools/scripts/init-premount/delay_for_raid
 sed -i 's/#FSCKFIX=no/FSCKFIX=yes/g' /etc/default/rcS
 
 # fix growpart for raid
-wget http://10.69.246.205/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
+wget http://KICK_HOST/misc/growroot -O /usr/share/initramfs-tools/scripts/local-bottom/growroot
 chmod a+x /usr/share/initramfs-tools/scripts/local-bottom/growroot
-wget http://10.69.246.205/misc/growpart -O /usr/bin/growpart
+wget http://KICK_HOST/misc/growpart -O /usr/bin/growpart
 chmod a+x /usr/bin/growpart
 
 # another teeth specific
@@ -144,7 +144,7 @@ update-initramfs -u -k all
 sed -i 's/start on.*/start on net-device-added INTERFACE=bond0/g' /etc/init/cloud-init-local.conf
 
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Ubuntu_14.04_Teeth
 
 # clean up
