@@ -12,15 +12,15 @@ e2label /dev/sda1 root
 rm /etc/mdadm/mdadm.conf
 
 # custom teeth cloud-init bit
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py3.4-upstart.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py2.7-upstart.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-echo -n > /etc/udev/rules.d/80-net-name-slot.rules
+#echo -n > /etc/udev/rules.d/70-persistent-net.rules
+#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+#echo -n > /etc/udev/rules.d/80-net-name-slot.rules
 
 # cloud-init debug logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg

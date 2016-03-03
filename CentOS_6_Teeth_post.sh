@@ -115,6 +115,7 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 wget http://KICK_HOST/cloud-init/cloud-init-0.7.7-el6.fc22.noarch.rpm
 rpm -Uvh --nodeps cloud*.rpm
 yum versionlock add cloud-init
+cp -r /usr/lib/python2.7/site-packages/cloud* /usr/lib/python2.6/site-packages/
 pip install pyserial
 chkconfig cloud-init on
 sed -i '/import sys/a reload(sys)\nsys.setdefaultencoding("Cp1252")' /usr/lib/python2.6/site-packages/configobj.py
@@ -162,7 +163,6 @@ system_info:
     shell: /bin/bash
 cloud_config_modules:
  - disk_setup
- - mounts
  - ssh-import-id
  - locale
  - set-passwords
