@@ -16,11 +16,14 @@ wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py2.7-upstart.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
+# breaks networking if missing
+mkdir -p /run/network
+
 # cloud-init kludges
 addgroup --system --quiet netdev
-#echo -n > /etc/udev/rules.d/70-persistent-net.rules
-#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-#echo -n > /etc/udev/rules.d/80-net-name-slot.rules
+echo -n > /etc/udev/rules.d/70-persistent-net.rules
+echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+echo -n > /etc/udev/rules.d/80-net-name-slot.rules
 
 # cloud-init debug logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
@@ -105,7 +108,7 @@ echo "GRUB_DEVICE_LABEL=root" >> /etc/default/grub
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="rd.fstab=no acpi=off noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="rd.fstab=no acpi=noirq noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 update-grub
 

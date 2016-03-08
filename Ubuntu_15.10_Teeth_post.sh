@@ -13,13 +13,13 @@ dpkg -i *.deb
 apt-mark hold cloud-init
 
 # breaks networking if missing
-#mkdir -p /run/network
+mkdir -p /run/network
 
 # cloud-init kludges
 addgroup --system --quiet netdev
-#echo -n > /etc/udev/rules.d/70-persistent-net.rules
-#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+echo -n > /etc/udev/rules.d/70-persistent-net.rules
+echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
+ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
 
 
 # cloud-init debug logging
@@ -121,7 +121,7 @@ update-initramfs -u -k all
 # keep grub2 from using UUIDs and regenerate config
 sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
 sed -i 's/#GRUB_TERMINAL=console/GRUB_TERMINAL=/g' /etc/default/grub
-sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=off noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="acpi=noirq noapic cgroup_enable=memory swapaccount=1 quiet"/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT.*/GRUB_TIMEOUT=0/g' /etc/default/grub
 update-grub
 
