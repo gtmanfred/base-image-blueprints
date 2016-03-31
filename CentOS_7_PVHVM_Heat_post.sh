@@ -762,13 +762,11 @@ chmod 0700 /usr/bin/heat-config-notify
 pip install ansible os-collect-config os-apply-config os-refresh-config dib-utils
 
 
-# Configure services (and symlinks)
-if [[ `systemctl` =~ -\.mount ]]; then
+# Configure services (and symlinks) assuming CentOS is using systemd
+# if there is no system unit file, install a local unit
+if [ ! -f /usr/lib/systemd/system/os-collect-config.service ]; then
 
-    # if there is no system unit file, install a local unit
-    if [ ! -f /usr/lib/systemd/system/os-collect-config.service ]; then
-
-        cat <<EOF >/etc/systemd/system/os-collect-config.service
+    cat <<EOF >/etc/systemd/system/os-collect-config.service
 [Unit]
 Description=Collect metadata and run hook commands.
 
@@ -784,29 +782,8 @@ cat <<EOF >/etc/os-collect-config.conf
 [DEFAULT]
 command=os-refresh-config
 EOF
-    fi
-
-    # enable and start service to poll for deployment changes
-    systemctl enable os-collect-config
-    systemctl start --no-block os-collect-config
-elif [[ `/sbin/init --version` =~ upstart ]]; then
-    if [ ! -f /etc/init/os-collect-config.conf ]; then
-
-        cat <<EOF >/etc/init/os-collect-config.conf
-start on runlevel [2345]
-stop on runlevel [016]
-respawn
-
-# We're logging to syslog
-console none
-
-exec os-collect-config  2>&1 | logger -t os-collect-config
-EOF
-    fi
-    initctl reload-configuration
-    service os-collect-config start
-else
-    echo "ERROR: only systemd or upstart supported" 1>&2
-    exit 1
 fi
 
+# enable and start service to poll for deployment changes
+systemctl enable os-collect-config
+systemctl start --no-block os-collect-config
