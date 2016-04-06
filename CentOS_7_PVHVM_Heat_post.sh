@@ -764,9 +764,7 @@ pip install ansible os-collect-config os-apply-config os-refresh-config dib-util
 
 # Configure services (and symlinks) assuming CentOS is using systemd
 # if there is no system unit file, install a local unit
-if [ ! -f /usr/lib/systemd/system/os-collect-config.service ]; then
-
-    cat <<EOF >/etc/systemd/system/os-collect-config.service
+cat <<EOF >/etc/systemd/system/os-collect-config.service
 [Unit]
 Description=Collect metadata and run hook commands.
 
@@ -782,7 +780,6 @@ cat <<EOF >/etc/os-collect-config.conf
 [DEFAULT]
 command=os-refresh-config
 EOF
-fi
 
 # enable and start service to poll for deployment changes
 systemctl enable os-collect-config
