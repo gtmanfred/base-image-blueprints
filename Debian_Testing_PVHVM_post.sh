@@ -123,7 +123,7 @@ systemctl enable nova-agent
 systemctl enable cloud-init-local
 
 # ssh permit rootlogin
-sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
 
 # cloud-init doesn't generate a ssh_host_ed25519_key
 cat > /etc/rc.local <<'EOF'
