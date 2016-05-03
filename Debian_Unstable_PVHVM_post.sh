@@ -74,50 +74,6 @@ update-grub
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
 
-# cloud-init / nova-agent sad panda hacks
-cat > /lib/systemd/system/cloud-init-local.service <<'EOF'
-[Unit]
-Description=Initial cloud-init job (pre-networking)
-Wants=local-fs.target
-After=local-fs.target
-
-[Service]
-Type=oneshot
-ExecStartPre=/bin/sleep 20
-ExecStart=/usr/bin/cloud-init init --local
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# this is broken upstream now, not sure why
-# but it's causing cloud-init services to start out of order and
-# is starting cloud-config first, which is not good
-cat > /lib/systemd/system/cloud-config.service <<'EOF'
-[Unit]
-Description=Apply the settings specified in cloud-config
-After=network.target syslog.target cloud-init.service
-Requires=cloud-init.service
-Wants=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/cloud-init modules --mode=config
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 # some systemd workarounds
 sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/xe-linux-distribution
 update-rc.d xe-linux-distribution defaults
@@ -132,6 +88,7 @@ After=local-fs.target xe-linux-distribution.service
 [Service]
 Type=oneshot
 ExecStart=/etc/init.d/nova-agent start
+ExecStartPost=/bin/sleep 12
 RemainAfterExit=yes
 TimeoutSec=0
 
@@ -141,15 +98,19 @@ StandardOutput=journal+console
 [Install]
 WantedBy=multi-user.target
 EOF
+
+# delay network online state until nova-agent does its thing
+mkdir /etc/systemd/system/network-online.target.d
+cat > /etc/systemd/system/network-online.target.d/nova-agent.conf <<'EOF'
+[Unit]
+After=nova-agent.service
+EOF
+
 systemctl enable xe-linux-distribution
 systemctl enable nova-agent
-systemctl enable cloud-init-local
-systemctl enable cloud-init
-systemctl enable cloud-config
-systemctl enable cloud-final
 
 # ssh permit rootlogin
-sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
 
 # cloud-init doesn't generate a ssh_host_ed25519_key
 cat > /etc/rc.local <<'EOF'
@@ -176,5 +137,5 @@ rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
-for k in $(find /var/log -type f); do echo > $k; done
-for k in $(find /tmp -type f); do rm -f $k; done
+find /var/log -type f -exec truncate -s 0 {} \;
+find /tmp -type f -delete
