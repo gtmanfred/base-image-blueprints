@@ -28,7 +28,7 @@ sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
-ssh_pwauth: False
+ssh_pwauth: True
 ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
@@ -37,7 +37,7 @@ system_info:
    distro: ubuntu
    default_user:
      name: root
-     lock_passwd: True
+     lock_passwd: False
      gecos: Ubuntu
      shell: /bin/bash
 bootcmd:
@@ -158,7 +158,6 @@ bash package_postback.sh Ubuntu_15.10_Teeth
 
 # clean up
 passwd -d root
-passwd -l root
 apt-get -y clean
 apt-get -y autoremove
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
