@@ -52,7 +52,7 @@ EOF
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 disable_root: False
-ssh_pwauth: False
+ssh_pwauth: True
 ssh_deletekeys: False
 resize_rootfs: noblock
 manage_etc_hosts: localhost
@@ -61,7 +61,7 @@ system_info:
    distro: debian
    default_user:
      name: root
-     lock_passwd: True
+     lock_passwd: False
      gecos: Debian
      shell: /bin/bash
 
@@ -200,7 +200,6 @@ bash package_postback.sh Debian_Testing_Teeth
 
 # clean up
 passwd -d root
-passwd -l root
 apt-get -y clean
 apt-get -y autoremove
 rm -f /etc/ssh/ssh_host_*

@@ -167,7 +167,7 @@ system_info:
   ssh_svcname: sshd
   default_user:
     name: root
-    lock_passwd: True
+    lock_passwd: False
     gecos: CentOS cloud-init user
     shell: /bin/bash
 cloud_config_modules:
@@ -200,7 +200,6 @@ bash package_postback.sh CentOS_6_Teeth
 # clean up
 yum clean all
 passwd -d root
-passwd -l root
 truncate -c -s 0 /var/log/yum.log
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/resolv.conf
