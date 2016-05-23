@@ -761,9 +761,14 @@ if __name__ == '__main__':
 EOF
 chmod 0700 /usr/bin/heat-config-notify
 
+# The following dependencies aren't being pulled in correctly on
+# Ubuntu 14.04.  See if this can be removed when building with a newer
+# Ubuntu release.  For more background, see:
+# https://github.com/rackerlabs/base-image-blueprints/pull/40
+pip install wrapt monotonic pytz funcsigs positional
+
 # Install SoftwareConfig and Ansible via PIP
 pip install ansible os-collect-config os-apply-config os-refresh-config dib-utils
-
 
 # Configure services (and symlinks)
 if [[ `systemctl` =~ -\.mount ]]; then
