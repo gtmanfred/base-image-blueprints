@@ -48,7 +48,7 @@ polling_interval = 5
 cachedir = {{cachedir}}
 {{/cachedir}}
 {{#collectors}}
-collectors = {{collectors}}
+collectors = {{.}}
 {{/collectors}}
 
 {{#cfn}}
