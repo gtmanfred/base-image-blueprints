@@ -767,6 +767,12 @@ chmod 0700 /usr/bin/heat-config-notify
 # https://github.com/rackerlabs/base-image-blueprints/pull/40
 pip install wrapt monotonic pytz funcsigs positional
 
+# The following package is installed, but out of date and is
+# causing Ansible to fail to run properly.
+# For more background, see:
+# https://github.com/rackerlabs/base-image-blueprints/pull/41
+pip install --upgrade setuptools
+
 # Install SoftwareConfig and Ansible via PIP
 pip install ansible os-collect-config os-apply-config os-refresh-config dib-utils
 
