@@ -79,29 +79,15 @@ sed -i 's/XenServer Virtual Machine Tools/xe-linux-distribution/g' /etc/init.d/x
 update-rc.d xe-linux-distribution defaults
 
 # intention is to move this bit into nova-agent instead
-cat > /lib/systemd/system/nova-agent.service <<'EOF'
-[Unit]
-Description=nova-agent
-Wants=local-fs.target
-After=local-fs.target xe-linux-distribution.service
-
+mkdir -p /etc/systemd/system/nova-agent.service.d
+cat > /etc/systemd/system/nova-agent.service.d/delaystart.conf <<'EOF'
 [Service]
-Type=oneshot
-ExecStart=/etc/init.d/nova-agent start
 ExecStartPost=/bin/sleep 12
-RemainAfterExit=yes
-TimeoutSec=0
-
-# Output needs to appear in instance console output
-StandardOutput=journal+console
-
-[Install]
-WantedBy=multi-user.target
 EOF
 
 # delay network online state until nova-agent does its thing
-mkdir /etc/systemd/system/network-online.target.d
-cat > /etc/systemd/system/network-online.target.d/nova-agent.conf <<'EOF'
+mkdir /etc/systemd/system/cloud-init.service.d
+cat > /etc/systemd/system/cloud-init.service.d/nova-agent.conf <<'EOF'
 [Unit]
 After=nova-agent.service
 EOF
@@ -110,7 +96,7 @@ systemctl enable xe-linux-distribution
 systemctl enable nova-agent
 
 # ssh permit rootlogin
-sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
+sed -i '/^PermitRootLogin/s/without-password/yes/g' /etc/ssh/sshd_config
 
 # cloud-init doesn't generate a ssh_host_ed25519_key
 cat > /etc/rc.local <<'EOF'
