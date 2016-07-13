@@ -4,7 +4,7 @@
 parted -s /dev/xvda set 1 boot on
 
 # install xen tools
-wget http://KICK_HOST/packages/xstools/6.2/xe-guest-utilities_6.2.0-1120_amd64.deb
+wget http://KICK_HOST/xstools/6.2/xe-guest-utilities_6.2.0-1120_amd64.deb
 dpkg -i xe-guest-utilities*.deb
 
 # install agent

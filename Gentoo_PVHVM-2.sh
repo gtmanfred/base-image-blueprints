@@ -125,8 +125,8 @@ mkdir /root/xe-guest-utilities
 cd /root/xe-guest-utilities
 emerge app-arch/rpm2targz
 emerge app-arch/rpm
-wget http://KICK_HOST/packages/xstools/6.2/xe-guest-utilities-6.2.0-1120.x86_64.rpm
-wget http://KICK_HOST/packages/xstools/6.2/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
+wget http://KICK_HOST/xstools/6.2/xe-guest-utilities-6.2.0-1120.x86_64.rpm
+wget http://KICK_HOST/xstools/6.2/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
 wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/gentoo-install-xe-guest-utilities.sh
 chmod +x gentoo-install-xe-guest-utilities.sh
 ./gentoo-install-xe-guest-utilities.sh /root/xe-guest-utilities x86_64
