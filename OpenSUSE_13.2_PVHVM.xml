@@ -391,8 +391,8 @@ baseurl=http://mirror.rackspace.com/opensuse/update/13.2/
 type=NONE
 EOF
 rm -f /etc/zypp/repos.d/*opensuse*.repo
-wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities-6.2.0-1120.x86_64.rpm
-wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
+wget http://KICK_HOST/packages/xstools/6.2/xe-guest-utilities-6.2.0-1120.x86_64.rpm
+wget http://KICK_HOST/packages/xstools/6.2/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
 rpm -Uhv xe-guest-utilities*.rpm
 wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39-1.x86_64.rpm
 rpm -Uhv nova-agent*

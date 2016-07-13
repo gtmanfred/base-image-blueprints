@@ -19,7 +19,7 @@ mkdir /tmp/tmp
 cd /tmp/tmp
 
 # install xen tools
-#wget http://ce3598b91333d7474379-b85ce4d8c2253d3876bef92f62a263f8.r84.cf5.rackcdn.com/xe-guest-utilities_6.2.0-1120_amd64.deb
+#wget http://KICK_HOST/packages/xstools/6.2/xe-guest-utilities_6.2.0-1120_amd64.deb
 #dpkg -i xe-guest-utilities_6.2.0-1120_amd64.deb
 
 # install agent
