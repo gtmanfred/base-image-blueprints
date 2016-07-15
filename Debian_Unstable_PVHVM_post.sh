@@ -96,7 +96,7 @@ systemctl enable xe-linux-distribution
 systemctl enable nova-agent
 
 # ssh permit rootlogin
-sed -i '/^PermitRootLogin/s/without-password/yes/g' /etc/ssh/sshd_config
+sed -i '/^PermitRootLogin/s/prohibit-password/yes/g' /etc/ssh/sshd_config
 
 # cloud-init doesn't generate a ssh_host_ed25519_key
 cat > /etc/rc.local <<'EOF'
