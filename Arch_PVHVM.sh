@@ -18,8 +18,8 @@ mkfs.ext4 /dev/sda1
 mkdir /mnt/arch
 mount /dev/sda1 /mnt/arch
 cd /mnt/arch
-bootstrap_date=$(curl ftp://mirror.rackspace.com/archlinux/iso/ | grep -iv 'archboot'| grep -iv 'latest'|awk {'print $9'}|tail -n 1|awk {'print $1'})
-wget http://mirror.rackspace.com/archlinux/iso/$bootstrap_date/archlinux-bootstrap-$bootstrap_date-x86_64.tar.gz
+latest_bootstrap=$(curl -s http://mirror.rackspace.com/archlinux/iso/latest/ | grep -oE 'href="archlinux-bootstrap-.+?-x86_64.tar.gz"' | grep -oE '".+"' | tr -d /\"/)
+wget http://mirror.rackspace.com/archlinux/iso/latest/$latest_bootstrap
 tar -zxf archlinux*.tar.gz
 mv root.x86_64/* . && rmdir root.x86_64 && rm -f README
 rm -f etc/resolv.conf

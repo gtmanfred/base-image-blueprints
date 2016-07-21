@@ -132,39 +132,37 @@ systemctl enable cloud-init.service
 systemctl enable cloud-final.service
 
 # Install kernel
-rm -rf /boot/*linux*
-cd /usr/src
-url=https://www.kernel.org
-url_suffix=$(curl -L $url| grep -A 1 "latest_link"| tail -1| cut -d "\"" -f 2 | cut -d "." -f 2-)
-wget -c $url$url_suffix
-filename=$(echo $url_suffix|cut -d "/" -f 6)
-dirname=$(echo $filename|cut -d "." -f -3)
-if [[ $dirname == *tar* ]]; then dirname=$(echo $filename|cut -d "." -f -2); fi
-vername=$(echo $dirname|cut -d "-" -f 2)
-tar -xJf $filename
-cd $dirname
-make mrproper
-wget http://KICK_HOST/kickstarts/Arch_PVHVM_kernel_config
-mv Arch_PVHVM_kernel_config .config
-make olddefconfig
-make && make modules_install
-cp -v arch/x86/boot/bzImage /boot/vmlinuz-$dirname
-mkinitcpio -k $vername -c /etc/mkinitcpio.conf -g /boot/initramfs-$dirname.img
+#rm -rf /boot/*linux*
+#cd /usr/src
+#url=https://www.kernel.org
+#kernel_url=$(curl -L $url| grep -A 1 "latest_link"| tail -1| cut -d "\"" -f 2)
+#wget -c $kernel_url
+#filename=$(basename $kernel_url)
+#dirname=$(basename $filename .tar.xz)
+#vername=$(echo $dirname|cut -d "-" -f 2)
+#tar -xJf $filename
+#cd $dirname
+#make mrproper
+#wget http://KICK_HOST/kickstarts/Arch_PVHVM_kernel_config -o .config
+#make olddefconfig
+#make && make modules_install
+#cp -v arch/x86/boot/bzImage /boot/vmlinuz-$dirname
+#mkinitcpio -k $vername -c /etc/mkinitcpio.conf -g /boot/initramfs-$dirname.img
 
 # growpart
-wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/growpart-initramfs
-mv growpart-initramfs /boot/
+#wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/growpart-initramfs
+#mv growpart-initramfs /boot/
 
 # Install bootloader
-cat > /boot/grub/grub.cfg << EOF
-timeout=5
+#cat > /boot/grub/grub.cfg << EOF
+#timeout=5
 
-menuentry 'Arch Linux $vername' {
-root=hd0,1
-linux /boot/vmlinuz-$dirname root=/dev/xvda1 init=/usr/lib/systemd/systemd
-initrd /boot/growpart-initramfs
-}
-EOF
+#menuentry 'Arch Linux $vername' {
+#root=hd0,1
+#linux /boot/vmlinuz-$dirname root=/dev/xvda1 init=/usr/lib/systemd/systemd
+#initrd /boot/growpart-initramfs
+#}
+#EOF
 grub-install /dev/sda
 
 # Configure services
