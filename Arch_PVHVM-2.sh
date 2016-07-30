@@ -150,6 +150,9 @@ systemctl enable sshd.service
 # last update
 pacman -Syu --noconfirm
 
+# permit SSH login as root
+sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config
+
 # log packages
 wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Arch_PVHVM
