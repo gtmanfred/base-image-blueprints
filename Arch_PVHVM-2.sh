@@ -128,7 +128,7 @@ net.ipv4.tcp_sack = 1
 EOF
 
 ## rebuild the initramfs with Xen drivers
-sed -i '/^MODULES/s/""/"xenfs xen_netfront xen_blkfront crc32_generic crc32c-intel"/g' /etc/mkinitcpio.conf
+sed -i '/^MODULES/s/""/"xenfs xen_netfront xen_blkfront crc32_generic crc32-pclmul libcrc32c crc32c_generic crc32c-intel"/g' /etc/mkinitcpio.conf
 mkinitcpio -p linux
 
 # get a current version of growpart from launchpad
