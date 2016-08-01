@@ -28,12 +28,10 @@ mv /dev/random /dev/random.bak && ln -s /dev/urandom /dev/random
 pacman-key --init
 pacman-key --populate archlinux
 rm -rf /dev/random && mv /dev/random.bak /dev/random
-sed -i 's/Required DatabaseOptional/Optional TrustAll/g' /etc/pacman.conf
 export arch=x86
 
 pacman -Syy
-pacman -Sy gzip wget grub bc --noconfirm
-pacman -Sy base-devel --noconfirm
+pacman -Sy grep sed --noconfirm
 
 #set up locale
 cat > /etc/locale.gen<<EOF
@@ -44,25 +42,21 @@ echo 'LANG="en_US.UTF-8"' > /etc/local.conf
 locale-gen
 
 # Install all the things
-pacman -Sy grep --noconfirm
-pacman -Sy base --noconfirm
-pacman -Sy autoconf automake binutils bison dash dnssec-anchors eventlog fakeroot flex gcc git gpm grub haveged keyutils krb5 ldns libedit libidn libltdl libmpc libtool m4 make openssh patch perl-error pkg-config python python2 python2-setuptools rpmextract rsync sqlite syslog-ng sysvinit-tools net-tools sudo wget devtools bc --noconfirm
-
-#Setup man database
-/usr/bin/mandb --quiet
+pacman -S base --noconfirm
+## extra packages
+pacman -S grub openssh rsyslog cronie sudo rsync wget python python-setuptools python2 python2-setuptools --noconfirm
 
 # install agent
-pacman -Sy xe-guest-utilities --noconfirm
-#wget https://aur.archlinux.org/packages/rp/rpm2targz/rpm2targz.tar.gz
+pacman -S xe-guest-utilities --noconfirm
 ln -s '/usr/lib/systemd/system/xe-linux-distribution.service' '/etc/systemd/system/multi-user.target.wants/xe-linux-distribution.service'
 systemctl enable xe-daemon.service
 systemctl enable xe-linux-distribution.service
 
-pacman -Sy openstack-guest-agents-unix --noconfirm
+pacman -S openstack-guest-agents-unix --noconfirm
 systemctl enable -f nova-agent.service
-pacman -Sy python-setuptools --noconfirm
-pacman -Sy cloud-init --noconfirm
-mv /etc/cloud/cloud.cfg.ubuntu_default /etc/cloud/cloud.cfg #pacman build is overwriting default
+
+## install cloud-init
+pacman -S python2-requests cloud-init --noconfirm
 #sed -i 's/self.update_package_sources/#self.update_package_sources/g' /usr/lib/python2.7/site-packages/cloudinit/distros/arch.py  # Hack to get lower flavors installing pkgs 
 
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
@@ -81,7 +75,7 @@ locale: en_US.UTF-8 UTF-8
 disable_root: 0
 ssh_pwauth: 1
 ssh_deletekeys:   0
-resize_rootfs: 0
+resize_rootfs: noblock
 syslog_fix_perms:
 
 # The modules that run in the 'config' stage
@@ -110,6 +104,19 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg<<EOF
 datasource_list: [ ConfigDrive, None ]
 EOF
 
+# cloud-init kludges
+echo -n > /etc/udev/rules.d/70-persistent-net.rules
+mkdir -p /etc/systemd/system/cloud-init.service.d
+cat > /etc/systemd/system/cloud-init.service.d/delaystart.conf <<'EOF'
+[Service]
+ExecStartPre=/usr/bin/sleep 12
+EOF
+#sed -i 's/ - \[ \*log_base, \*log_syslog ]/# - \[ \*log_base, \*log_syslog ]/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
+systemctl enable cloud-config.service
+systemctl enable cloud-init-local.service
+systemctl enable cloud-init.service
+systemctl enable cloud-final.service
+
 cat > /etc/sysctl.conf <<'EOF'
 net.ipv4.tcp_rmem = 4096 87380 33554432
 net.ipv4.tcp_wmem = 4096 65536 33554432
@@ -120,63 +127,34 @@ net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_sack = 1
 EOF
 
-# cloud-init kludges
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-sed -i 's$After=local-fs.target$After=local-fs.target rc-local.service$g' /usr/lib/systemd/system/cloud-init-local.service
-sed -i 's$Type=oneshot$Type=oneshot\nExecStartPre=/usr/bin/sleep 10$g' /usr/lib/systemd/system/cloud-init-local.service
-sed -i 's/ - \[ \*log_base, \*log_syslog ]/# - \[ \*log_base, \*log_syslog ]/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
-systemctl enable cloud-config.service
-systemctl enable cloud-init-local.service
-systemctl enable cloud-init.service
-systemctl enable cloud-final.service
+## rebuild the initramfs with Xen drivers
+sed -i '/^MODULES/s/""/"xenfs xen_netfront xen_blkfront crc32_generic crc32-pclmul libcrc32c crc32c_generic crc32c-intel"/g' /etc/mkinitcpio.conf
+mkinitcpio -p linux
 
-# Install kernel
-rm -rf /boot/*linux*
-cd /usr/src
-url=https://www.kernel.org
-url_suffix=$(curl -L $url| grep -A 1 "latest_link"| tail -1| cut -d "\"" -f 2 | cut -d "." -f 2-)
-wget -c $url$url_suffix
-filename=$(echo $url_suffix|cut -d "/" -f 6)
-dirname=$(echo $filename|cut -d "." -f -3)
-if [[ $dirname == *tar* ]]; then dirname=$(echo $filename|cut -d "." -f -2); fi
-vername=$(echo $dirname|cut -d "-" -f 2)
-tar -xJf $filename
-cd $dirname
-make mrproper
-wget http://KICK_HOST/kickstarts/Arch_PVHVM_kernel_config
-mv Arch_PVHVM_kernel_config .config
-make olddefconfig
-make && make modules_install
-cp -v arch/x86/boot/bzImage /boot/vmlinuz-$dirname
-mkinitcpio -k $vername -c /etc/mkinitcpio.conf -g /boot/initramfs-$dirname.img
-
-# growpart
-wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/growpart-initramfs
-mv growpart-initramfs /boot/
+# get a current version of growpart from launchpad
+wget http://bazaar.launchpad.net/~cloud-utils-dev/cloud-utils/trunk/download/head:/growpart-20110225134600-d84xgz6209r194ob-1/growpart -O /usr/bin/growpart && chmod +x /usr/bin/growpart
 
 # Install bootloader
-cat > /boot/grub/grub.cfg << EOF
-timeout=5
-
-menuentry 'Arch Linux $vername' {
-root=hd0,1
-linux /boot/vmlinuz-$dirname root=/dev/xvda1 init=/usr/lib/systemd/systemd
-initrd /boot/growpart-initramfs
-}
-EOF
-grub-install /dev/sda
+sed -i '/^#GRUB_DISABLE_LINUX_UUID/s/^#//' /etc/default/grub
+sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT/s/"quiet"/""/' /etc/default/grub
+echo 'GRUB_DISABLE_SUBMENU=y' >> /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg
+#sed -i '/^\s*search/s/^/#/' /boot/grub/grub.cfg
+sed -i 's#/dev/loop0p1#/dev/xvda1#' /boot/grub/grub.cfg
 
 # Configure services
 systemctl enable cronie.service
-systemctl enable syslog-ng
-systemctl enable sshd
+systemctl enable rsyslog.service
+systemctl enable sshd.service
 
 # last update
 pacman -Syu --noconfirm
 
+# permit SSH login as root
+sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config
+
 # log packages
-wget http://KICK_HOST/kickstarts/package_postback.sh
+wget http://10.69.246.205/kickstarts/package_postback.sh
 bash package_postback.sh Arch_PVHVM
 
 # guest utilities kludge
@@ -201,11 +179,10 @@ rm -f /root/.ssh/known_hosts
 rm -rf /root/nova-agent
 rm -f /installer.sh #crap pacman guest agent leftovers
 rm -rf /tmp/build
-for k in $(find /var/log -type f); do echo > $k; done
-for k in $(find /tmp -type f); do rm -f $k; done
+find /var/log -type f -exec cp -f /dev/null {} \;
+find /tmp -type f -delete
 yes | pacman -Scc
 
 # cleanup
-rm -rf /archlinux-bootstrap*
 echo "Exiting Chroot..."
 
