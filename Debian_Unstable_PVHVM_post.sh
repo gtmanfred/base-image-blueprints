@@ -63,7 +63,7 @@ cat > /etc/fstab <<'EOF'
 # that works even if disks are added and removed. See fstab(5).
 #
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
-/dev/xvda1	/               ext3    errors=remount-ro,noatime,barrier=0 0       1
+/dev/xvda1	/               ext4    errors=remount-ro,noatime,barrier=0 0       1
 #/dev/xvdc1	none            swap    sw              0       0
 EOF
 
