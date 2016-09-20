@@ -4,6 +4,8 @@
 apt-get update
 apt-get -y dist-upgrade
 
+apt-get -y purge biosdevname
+
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
 e2label /dev/sda1 root
@@ -12,18 +14,12 @@ e2label /dev/sda1 root
 rm /etc/mdadm/mdadm.conf
 
 # custom teeth cloud-init bit
-wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py2.7-upstart.deb
+wget http://KICK_HOST/cloud-init/cloud-init_0.7.7.2-py2-upstart.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
 
 # breaks networking if missing
 mkdir -p /run/network
-
-# cloud-init kludges
-addgroup --system --quiet netdev
-echo -n > /etc/udev/rules.d/70-persistent-net.rules
-echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-echo -n > /etc/udev/rules.d/80-net-name-slot.rules
 
 # cloud-init debug logging
 sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
@@ -71,6 +67,21 @@ cat > /etc/cloud/cloud.cfg.d/90_dpkg.cfg <<'EOF'
 # to update this file, run dpkg-reconfigure cloud-init
 datasource_list: [ ConfigDrive, None ]
 EOF
+
+# cloud-init kludges
+cat > /etc/udev/rules.d/70-persistent-net.rules <<'EOF'
+#OnMetal v1
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.1", NAME="eth1"
+
+#OnMetal v2
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:02:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.0", NAME="eth0"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:02:00.1", NAME="eth1"
+SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.1", NAME="eth1"
+EOF
+
+echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 
 # minimal network conf
 # causes boot delay if left out, no bueno
@@ -167,3 +178,4 @@ rm -rf /tmp/tmp
 find /var/log -type f -exec truncate -s 0 {} \;
 find /tmp -type f -delete
 find /root -type f ! -iname ".*" -delete
+
