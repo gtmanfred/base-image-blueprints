@@ -9,16 +9,6 @@ echo "exclude=kernel*" >> /etc/yum.conf
 
 # update all
 yum -y update
-yum -y upgrade
-
-# setup systemd to boot to the right runlevel
-echo -n "Setting default runlevel to multiuser text mode"
-rm -f /etc/systemd/system/default.target
-ln -s /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
-
-# If you want to remove rsyslog and just use journald, remove this!
-echo -n "Disabling persistent journal"
-rmdir /var/log/journal/
 
 # Non-firewalld-firewall
 echo -n "Writing static firewall"
@@ -39,13 +29,6 @@ cat > /etc/sysconfig/iptables <<'EOF'
 COMMIT
 EOF
 
-echo -n "Getty fixes"
-# although we want console output going to the serial console, we don't
-# actually have the opportunity to login there. FIX.
-# we don't really need to auto-spawn _any_ gettys.
-#sed -i '/^#NAutoVTs=.*/ a\
-#NAutoVTs=0' /etc/systemd/logind.conf
-
 echo -n "Network fixes"
 # initscripts don't like this file to be missing.
 cat > /etc/sysconfig/network << EOF
@@ -55,9 +38,6 @@ EOF
 
 # For cloud images, 'eth0' _is_ the predictable device name, since
 # we don't want to be tied to specific virtual (!) hardware
-#echo -n > /etc/udev/rules.d/70-persistent-net.rules
-#echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
-#ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
 cat > /etc/udev/rules.d/70-persistent-net.rules <<'EOF'
 #OnMetal v1
 SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:08:00.0", NAME="eth0"
@@ -68,29 +48,11 @@ SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.0", NAME="eth0"
 SUBSYSTEM=="net", ACTION=="add", KERNELS=="0000:03:00.1", NAME="eth1"
 EOF
 
-# simple eth0 config, again not hard-coded to the build hardware
-#cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
-#DEVICE="eth0"
-#BOOTPROTO="static"
-#ONBOOT="yes"
-#TYPE="Ethernet"
-#EOF
-
 # generic localhost names
 cat > /etc/hosts << EOF
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 EOF
-
-# Because memory is scarce resource in most cloud/virt environments,
-# and because this impedes forensics, we are differing from the Fedora
-# default of having /tmp on tmpfs.
-echo "Disabling tmpfs for /tmp."
-systemctl mask tmp.mount
-
-# set some stuff
-#echo 'net.ipv4.conf.eth0.arp_notify = 1' >> /etc/sysctl.conf
-#echo 'vm.swappiness = 0' >> /etc/sysctl.conf
 
 cat >> /etc/sysctl.conf <<'EOF'
 net.ipv4.tcp_rmem = 4096 87380 33554432
@@ -197,7 +159,6 @@ bash package_postback.sh CentOS_6_Teeth
 # clean up
 yum clean all
 passwd -d root
-truncate -c -s 0 /var/log/yum.log
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/resolv.conf
 rm -f /root/.bash_history
@@ -206,6 +167,6 @@ rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
 rm -f /root/anaconda-ks.cfg
 rm -rf /tmp/tmp
-for k in $(find /tmp -type f); do rm -f $k; done
-for k in $(find /root -type f \( ! -iname ".*" \)); do rm -f $k; done
-for k in $(find /var/log -type f); do echo > $k; done
+find /tmp -type f -delete
+find /root -type f ! -iname ".*" -delete
+find /var/log -type f -exec truncate -s 0 {} \;
