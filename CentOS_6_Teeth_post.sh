@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# set rackspace mirrors
+echo "Setting up Rackspace mirrors"
+sed -i 's/mirror.centos.org/mirror.rackspace.com/g' /etc/yum.repos.d/CentOS-Base.repo
+sed -i 's%baseurl.*%baseurl=http://mirror.rackspace.com/epel/6/x86_64/%g' /etc/yum.repos.d/epel.repo
+sed -i '/baseurl/s/# *//' /etc/yum.repos.d/CentOS-Base.repo
+sed -i '/baseurl/s/# *//' /etc/yum.repos.d/epel.repo
+sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
+sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
+
 #centos 6 specific, pin the kernel by downloading old one and removing current version
 echo "Pinning kernel"
 REMOVEKERNEL=$(rpm -q kernel)
@@ -10,6 +19,7 @@ yum -y erase $REMOVEKERNEL
 echo "exclude=kernel*" >> /etc/yum.conf
 
 # update all
+echo "Installing all updates"
 yum -y update
 
 # Non-firewalld-firewall
@@ -74,14 +84,6 @@ PROMPT=no
 AUTOFSCK_OPT="-y"
 AUTOFSCK_TIMEOUT=10
 EOF
-
-# set rackspace mirrors
-sed -i 's/mirror.centos.org/mirror.rackspace.com/g' /etc/yum.repos.d/CentOS-Base.repo
-sed -i 's%baseurl.*%baseurl=http://mirror.rackspace.com/epel/6/x86_64/%g' /etc/yum.repos.d/epel.repo
-sed -i '/baseurl/s/# *//' /etc/yum.repos.d/CentOS-Base.repo
-sed -i '/baseurl/s/# *//' /etc/yum.repos.d/epel.repo
-sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
-sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
 wget http://KICK_HOST/pyserial/pyserial-3.1.1.tar.gz
@@ -164,13 +166,13 @@ bash package_postback.sh CentOS_6_Teeth
 yum clean all
 passwd -d root
 rm -f /etc/ssh/ssh_host_*
-rm -f /etc/resolv.conf
 rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
 rm -f /root/anaconda-ks.cfg
 rm -rf /tmp/tmp
+truncate -s 0 /etc/resolv.conf
 find /tmp -type f -delete
 find /root -type f ! -iname ".*" -delete
 find /var/log -type f -exec truncate -s 0 {} \;
