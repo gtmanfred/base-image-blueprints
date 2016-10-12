@@ -84,7 +84,10 @@ sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/CentOS-Base.repo
 sed -i '/mirrorlist/s/^/#/' /etc/yum.repos.d/epel.repo
 
 # install custom cloud-init and lock version
-pip install pyserial
+wget http://KICK_HOST/pyserial/pyserial-3.1.1.tar.gz
+tar xvfz pyserial-3.1.1.tar.gz
+cd pyserial-3.1.1 && python setup.py install
+cd ..
 rpm -Uvh --nodeps http://KICK_HOST/cloud-init/cloud-init-0.7.7-bzr1117.el6.noarch.rpm
 yum versionlock add cloud-init
 chkconfig cloud-init on
