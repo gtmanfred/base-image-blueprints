@@ -99,7 +99,7 @@ sed -i 's/WARNING/DEBUG/g' /etc/cloud/cloud.cfg.d/05_logging.cfg
 # hack for teeth sd* labeling
 tune2fs -L / /dev/sda1
 cat > /etc/fstab <<'EOF'
-LABEL=/ / ext3 errors=remount-ro,noatime 0 1
+LABEL=/ / ext4 errors=remount-ro,noatime 0 1
 EOF
 
 # another teeth specific
