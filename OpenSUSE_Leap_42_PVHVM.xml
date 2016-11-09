@@ -2,7 +2,14 @@
 <!DOCTYPE profile>
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
   <add-on>
-    <add_on_products config:type="list"/>
+    <add_on_products config:type="list">
+      <listentry>
+        <media_url><![CDATA[http://mirror.rackspace.com/opensuse/update/leap/42.1/oss]]></media_url>
+        <name>openSUSE-42.1-updates</name>
+        <alias>openSUSE-42.1-updates</alias>
+        <product_dir>/</product_dir>
+      </listentry>
+    </add_on_products>
   </add-on>
   <users config:type="list">
     <user>
@@ -322,7 +329,7 @@ server 3.opensuse.pool.ntp.org prefer
       config:type="boolean">true</stop_on_solver_conflict>
   </upgrade>
     <image/>
-    <instsource>http://mirror.rackspace.com/opensuse/update/leap/42.1/oss/</instsource>
+    <instsource>http://mirror.rackspace.com/opensuse/distribution/leap/42.1/repo/oss/</instsource>
     <packages config:type="list">
       <package>autoyast2</package>
       <package>crda</package>
@@ -399,20 +406,6 @@ cd /root/tmp
 cat > /etc/resolv.conf<<'EOF'
 nameserver 8.8.8.8
 EOF
-cat > /etc/zypp/repos.d/openSUSE-42.1-updates.repo <<'EOF'
-[openSUSE-42.1-updates]
-name=openSUSE-42.1-updates
-enabled=1
-autorefresh=1
-baseurl=http://mirror.rackspace.com/opensuse/update/leap/42.1/oss/
-type=NONE
-EOF
-##mkdir -p /var/lib/cloud/scripts/per-instance 2>/dev/null
-##cat > /var/lib/cloud/scripts/per-instance/repo-fix.sh <<'EOF'
-###!/bin/sh
-##sed -i 's%openSUSE-current%leap/42.1%' /etc/zypp/repos.d/openSUSE-42.1-0.repo
-##EOF
-##chmod +x /var/lib/cloud/scripts/per-instance/repo-fix.sh
 wget http://KICK_HOST/xstools/6.2/xe-guest-utilities-6.2.0-1120.x86_64.rpm
 wget http://KICK_HOST/xstools/6.2/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
 rpm -Uhv xe-guest-utilities*.rpm
@@ -496,7 +489,7 @@ echo "done"
     <post-scripts config:type="list">
       <script>
         <interpreter>shell</interpreter>
-        <network_needed config:type="boolean">true</network_needed>
+        <network_needed config:type="boolean">false</network_needed>
         <source><![CDATA[
 echo "done"
 ]]>                    
