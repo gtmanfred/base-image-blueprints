@@ -4,22 +4,13 @@
   <add-on>
     <add_on_products config:type="list">
       <listentry>
-        <media_url>http://download.opensuse.org/update/13.2</media_url>
-        <product>openSUSE_13.2_Update</product>
+        <media_url><![CDATA[http://mirror.rackspace.com/opensuse/update/leap/42.1/oss]]></media_url>
+        <name>openSUSE-42.1-updates</name>
+        <alias>openSUSE-42.1-updates</alias>
         <product_dir>/</product_dir>
-        <ask_on_error config:type="boolean">false</ask_on_error>
       </listentry>
-    <signature-handling>
-      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
-      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
-      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
-      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
-      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
-      <import_gpg_key config:type="boolean">true</import_gpg_key>
-    </signature-handling>
     </add_on_products>
   </add-on>
-
   <users config:type="list">
     <user>
       <username>root</username>
@@ -42,7 +33,7 @@
       <halt config:type="boolean">true</halt>
       <confirm config:type="boolean">false</confirm>
       <forceboot config:type="boolean">false</forceboot>
-      <second_stage config:type="boolean">true</second_stage>
+      <second_stage config:type="boolean">false</second_stage>
       <feedback config:type="boolean">true</feedback>
       <debug config:type="boolean">true</debug>
     </mode>
@@ -57,7 +48,10 @@
       <accept_verification_failed config:type="boolean">true</accept_verification_failed>
       <import_gpg_key config:type="boolean">true</import_gpg_key>
     </signature-handling>
-    <storage/>
+    <storage>
+      <partition_alignment config:type="symbol">align_optimal</partition_alignment>
+      <start_multipath config:type="boolean">false</start_multipath>
+    </storage>
   </general>
   <host>
     <hosts config:type="list">
@@ -105,6 +99,11 @@
       </hosts_entry>
     </hosts>
   </host>
+  <kdump>
+    <add_crash_kernel config:type="boolean">false</add_crash_kernel>
+    <crash_kernel config:type="list"/>
+    <general/>
+  </kdump>
   <keyboard>
     <keymap>english-us</keymap>
   </keyboard>
@@ -112,25 +111,34 @@
     <language>en_US</language>
     <languages/>
   </language>
-  <ldap>
-    <base_config_dn/>
-    <bind_dn/>
-    <create_ldap config:type="boolean">false</create_ldap>
-    <file_server config:type="boolean">false</file_server>
-    <ldap_domain/>
-    <ldap_server/>
-    <ldap_tls config:type="boolean">false</ldap_tls>
-    <login_enabled config:type="boolean">true</login_enabled>
-    <member_attribute>member</member_attribute>
-    <mkhomedir config:type="boolean">false</mkhomedir>
-    <pam_password>exop</pam_password>
-    <sssd config:type="boolean">true</sssd>
-    <sssd_with_krb config:type="boolean">false</sssd_with_krb>
-    <start_autofs config:type="boolean">false</start_autofs>
-    <start_ldap config:type="boolean">false</start_ldap>
-  </ldap>
   <login_settings/>
   <networking>
+    <interfaces config:type="list">
+      <interface>
+        <bootproto>static</bootproto>
+        <broadcast>127.255.255.255</broadcast>
+        <device>lo</device>
+        <firewall>no</firewall>
+        <ipaddr>127.0.0.1</ipaddr>
+        <netmask>255.0.0.0</netmask>
+        <network>127.0.0.0</network>
+        <prefixlen>8</prefixlen>
+        <startmode>nfsroot</startmode>
+        <usercontrol>no</usercontrol>
+      </interface>
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth0</device>
+        <firewall>yes</firewall>
+        <startmode>auto</startmode>
+      </interface>
+      <interface>
+        <bootproto>static</bootproto>
+        <device>eth1</device>
+        <firewall>yes</firewall>
+        <startmode>auto</startmode>
+      </interface>
+    </interfaces>
     <ipv6 config:type="boolean">true</ipv6>
     <keep_install_network config:type="boolean">false</keep_install_network>
   </networking>
@@ -181,6 +189,11 @@
 ## Add external Servers using
 ## # rcntp addserver &lt;yourserver&gt;
 ## 
+
+server 0.opensuse.pool.ntp.org prefer
+server 1.opensuse.pool.ntp.org prefer
+server 2.opensuse.pool.ntp.org prefer
+server 3.opensuse.pool.ntp.org prefer
 
 ##
 ## Miscellaneous stuff
@@ -293,9 +306,21 @@
       <timeout config:type="integer">10</timeout>
     </yesno_messages>
   </report>
-  <runlevel>
-    <default>3</default>
-  </runlevel>
+  <services-manager>
+    <default_target>multi-user</default_target>
+    <services>
+      <disable config:type="list">
+        <service>YaST2-Second-Stage</service>
+      </disable>
+      <enable config:type="list">
+        <service>sshd</service>
+        <service>cloud-config</service>
+        <service>cloud-final</service>
+        <service>cloud-init-local</service>
+        <service>cloud-init</service>
+      </enable>
+    </services>
+  </services-manager>
   <software>
   <upgrade>
     <only_installed_packages
@@ -304,7 +329,7 @@
       config:type="boolean">true</stop_on_solver_conflict>
   </upgrade>
     <image/>
-    <instsource>http://download.opensuse.org/update/13.2/</instsource>
+    <instsource>http://mirror.rackspace.com/opensuse/distribution/leap/42.1/repo/oss/</instsource>
     <packages config:type="list">
       <package>autoyast2</package>
       <package>crda</package>
@@ -340,8 +365,7 @@
     </packages>
     <patterns config:type="list">
       <pattern>base</pattern>
-      <pattern>sw_management</pattern>
-      <pattern>yast2_install_wf</pattern>
+      <pattern>yast2_basis</pattern>
     </patterns>
     <remove-packages config:type="list">
     </remove-packages>
@@ -382,27 +406,11 @@ cd /root/tmp
 cat > /etc/resolv.conf<<'EOF'
 nameserver 8.8.8.8
 EOF
-cat > /etc/zypp/repos.d/openSUSE-13.2-updates.repo <<'EOF'
-[openSUSE-13.2-updates]
-name=openSUSE-13.2-updates
-enabled=1
-autorefresh=1
-baseurl=http://mirror.rackspace.com/opensuse/update/13.2/
-type=NONE
-EOF
-rm -f /etc/zypp/repos.d/*opensuse*.repo
 wget http://KICK_HOST/xstools/6.2/xe-guest-utilities-6.2.0-1120.x86_64.rpm
 wget http://KICK_HOST/xstools/6.2/xe-guest-utilities-xenstore-6.2.0-1120.x86_64.rpm
 rpm -Uhv xe-guest-utilities*.rpm
 wget https://github.com/rackerlabs/openstack-guest-agents-unix/releases/download/1.39.1/nova-agent-1.39-1.x86_64.rpm
 rpm -Uhv nova-agent*
-chkconfig sshd on
-wget http://dd9ae84647939c3a4e29-34570634e5b2d7f40ba94fa8b6a989f4.r72.cf5.rackcdn.com/cloud-init-0.7.5-bzr971.noarch.rpm
-rpm -Uhv --nodeps --force cloud-*rpm
-chkconfig cloud-init-local on
-chkconfig cloud-init on
-chkconfig cloud-config on
-chkconfig cloud-final on
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 datasource_list: [ ConfigDrive , None ]
 disable_root: False
@@ -420,6 +428,9 @@ system_info:
     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
     shell: /bin/sh
     package_mirrors: []
+users:
+  - name: root
+    lock_passwd: false
 EOF
 cat >> /etc/sysctl.conf <<'EOF'
 net.ipv4.tcp_rmem = 4096 87380 33554432
@@ -439,25 +450,11 @@ echo 'GRUB_DISABLE_LINUX_UUID=true' >> /etc/default/grub
 grub2-mkconfig --output=/boot/grub2/grub.cfg
 parted -s /dev/hda set 1 boot on
 chmod 000 /usr/lib/YaST2/startup/YaST2.Second-Stage
-systemctl disable YaST2-Second-Stage.service
-cat > /etc/systemd/system/cloud-init-local.service <<'EOF'
-[Unit]
-Description=Initial cloud-init job (pre-networking)
-Wants=local-fs.target
-After=local-fs.target
-
+# if cloud-init starts before nova-agent configures the network many things fail, so we'll delay for a bit
+mkdir -p /etc/systemd/system/cloud-init.service.d
+cat > /etc/systemd/system/cloud-init.service.d/delaystart.conf <<'EOF'
 [Service]
-Type=oneshot
-ExecStartPre=/usr/bin/sleep 30
-ExecStart=/usr/bin/cloud-init init --local
-RemainAfterExit=yes
-TimeoutSec=60
-
-# Output needs to appear in instance console output
-StandardOutput=tty
-
-[Install]
-WantedBy=multi-user.target
+ExecStartPre=/usr/bin/sleep 20
 EOF
 cat > /etc/init.d/network <<'EOF' 
 #!/bin/sh
@@ -471,9 +468,15 @@ fi
 EOF
 chmod +x /etc/init.d/network
 
+## for some reason services manager isn't enabling these, so we'll do so explicitly
+systemctl enable sshd.service
+systemctl enable cloud-config.service
+systemctl enable cloud-final.service
+systemctl enable cloud-init-local.service
+systemctl enable cloud-init.service
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh OpenSUSE_13.2_PVHVM
+bash package_postback.sh OpenSUSE_Leap_42_PVHVM
 
 passwd -d root
 rm -rf /root/tmp
@@ -486,7 +489,7 @@ echo "done"
     <post-scripts config:type="list">
       <script>
         <interpreter>shell</interpreter>
-        <network_needed config:type="boolean">true</network_needed>
+        <network_needed config:type="boolean">false</network_needed>
         <source><![CDATA[
 echo "done"
 ]]>                    
