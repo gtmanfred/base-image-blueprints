@@ -476,7 +476,7 @@ systemctl enable cloud-init-local.service
 systemctl enable cloud-init.service
 # log packages
 wget http://KICK_HOST/kickstarts/package_postback.sh
-bash package_postback.sh OpenSUSE_Leap_42.1_PVHVM
+bash package_postback.sh OpenSUSE_Leap_42_PVHVM
 
 passwd -d root
 rm -rf /root/tmp
