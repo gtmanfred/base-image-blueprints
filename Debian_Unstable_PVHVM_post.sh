@@ -68,8 +68,10 @@ cat > /etc/fstab <<'EOF'
 EOF
 
 # keep grub2 from using UUIDs and regenerate config
-sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
-update-grub
+#sed -i 's/#GRUB_DISABLE_LINUX_UUID.*/GRUB_DISABLE_LINUX_UUID="true"/g' /etc/default/grub
+#update-grub
+## politely setting GRUB_DISABLE_LINUX_UUID no longer works, so we need a bigger hammer
+sed -ri 's#root=UUID=[^ ]+#root=/dev/xvda1#' /boot/grub/grub.cfg
 
 # remove cd-rom from sources.list
 sed -i '/.*cdrom.*/d' /etc/apt/sources.list
