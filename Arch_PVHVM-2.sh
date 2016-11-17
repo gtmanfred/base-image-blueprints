@@ -56,8 +56,9 @@ pacman -S openstack-guest-agents-unix --noconfirm
 systemctl enable -f nova-agent.service
 
 ## install cloud-init
-pacman -S python2-requests cloud-init --noconfirm
-#sed -i 's/self.update_package_sources/#self.update_package_sources/g' /usr/lib/python2.7/site-packages/cloudinit/distros/arch.py  # Hack to get lower flavors installing pkgs 
+pacman -S python2-requests python2-oauthlib python2-jinja cloud-init --noconfirm
+# argparse is shipped with python2.7.. requires.txt hasn't been updated for this, so we have to hack around it  :(
+sed -i '/^argparse/d' /usr/lib/python2.7/site-packages/cloud_init-*.egg-info/requires.txt
 
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
 system_info:
@@ -154,7 +155,7 @@ pacman -Syu --noconfirm
 sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config
 
 # log packages
-wget http://10.69.246.205/kickstarts/package_postback.sh
+wget http://KICK_HOST/kickstarts/package_postback.sh
 bash package_postback.sh Arch_PVHVM
 
 # guest utilities kludge
