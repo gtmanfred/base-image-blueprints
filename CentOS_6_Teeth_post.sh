@@ -48,6 +48,21 @@ NETWORKING=yes
 NOZEROCONF=yes
 EOF
 
+# IPv6 does not come up on first boot unless you restart networking.
+echo -n "Writing initial network restart script"
+cat > /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh <<'EOF'
+#!/bin/sh
+
+# IPv6 does not come up on first boot on CentOS 6 without a network restart.
+# This may be kernel related.
+# Revisit this if we unpin the kernel from 2.6.32-504.30.3.el6.x86_64
+
+service network restart
+
+EOF
+
+chmod a+x /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh
+
 # For cloud images, 'eth0' _is_ the predictable device name, since
 # we don't want to be tied to specific virtual (!) hardware
 cat > /etc/udev/rules.d/70-persistent-net.rules <<'EOF'
