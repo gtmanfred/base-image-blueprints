@@ -50,6 +50,7 @@ EOF
 
 # IPv6 does not come up on first boot unless you restart networking.
 echo -n "Writing initial network restart script"
+mkdir -p /var/lib/cloud/scripts/per-instance
 cat > /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh <<'EOF'
 #!/bin/sh
 
