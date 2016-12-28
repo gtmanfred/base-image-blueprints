@@ -15,7 +15,6 @@ REMOVEKERNEL=$(rpm -q kernel)
 wget http://KICK_HOST/packages/centos/6/kernel-2.6.32-504.30.3.el6.x86_64.rpm
 wget http://KICK_HOST/packages/centos/6/kernel-headers-2.6.32-504.30.3.el6.x86_64.rpm
 yum -y localinstall kernel*
-yum -y erase $REMOVEKERNEL
 echo "exclude=kernel*" >> /etc/yum.conf
 
 # update all
@@ -58,6 +57,7 @@ cat > /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh <<'EOF'
 # This may be kernel related.
 # Revisit this if we unpin the kernel from 2.6.32-504.30.3.el6.x86_64
 
+sleep 12
 service network restart
 
 EOF
