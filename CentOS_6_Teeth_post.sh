@@ -15,7 +15,21 @@ REMOVEKERNEL=$(rpm -q kernel)
 wget http://KICK_HOST/packages/centos/6/kernel-2.6.32-504.30.3.el6.x86_64.rpm
 wget http://KICK_HOST/packages/centos/6/kernel-headers-2.6.32-504.30.3.el6.x86_64.rpm
 yum -y localinstall kernel*
+#yum -y erase $REMOVEKERNEL ## <<- actually removing this strips out a ton of dependencies and results in a broken image :(
 echo "exclude=kernel*" >> /etc/yum.conf
+
+# teeth specific initrd
+cat > /etc/sysconfig/modules/onmetal.modules <<'EOF'
+#!/bin/sh
+exec /sbin/modprobe bonding >/dev/null 2>&1
+exec /sbin/modprobe 8021q >/dev/null 2>&1
+EOF
+chmod +x /etc/sysconfig/modules/onmetal.modules
+#
+cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
+blacklist mei_me
+EOF
+dracut -f /boot/initramfs-2.6.32-504.30.3.el6.x86_64.img 2.6.32-504.30.3.el6.x86_64
 
 # update all
 echo "Installing all updates"
@@ -52,16 +66,12 @@ echo -n "Writing initial network restart script"
 mkdir -p /var/lib/cloud/scripts/per-instance
 cat > /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh <<'EOF'
 #!/bin/sh
-
 # IPv6 does not come up on first boot on CentOS 6 without a network restart.
 # This may be kernel related.
 # Revisit this if we unpin the kernel from 2.6.32-504.30.3.el6.x86_64
-
 sleep 12
 service network restart
-
 EOF
-
 chmod a+x /var/lib/cloud/scripts/per-instance/restartnetworkip6.sh
 
 # For cloud images, 'eth0' _is_ the predictable device name, since
@@ -119,19 +129,6 @@ tune2fs -L / /dev/sda1
 cat > /etc/fstab <<'EOF'
 LABEL=/ / ext4 errors=remount-ro,noatime 0 1
 EOF
-
-# another teeth specific
-cat > /etc/sysconfig/modules/onmetal.modules <<'EOF'
-#!/bin/sh
-exec /sbin/modprobe bonding >/dev/null 2>&1
-exec /sbin/modprobe 8021q >/dev/null 2>&1
-EOF
-chmod +x /etc/sysconfig/modules/onmetal.modules
-#
-cat > /etc/modprobe.d/blacklist-mei.conf <<'EOF'
-blacklist mei_me
-EOF
-dracut -f
 
 # our cloud-init config
 cat > /etc/cloud/cloud.cfg.d/10_rackspace.cfg <<'EOF'
