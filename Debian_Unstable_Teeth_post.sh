@@ -91,16 +91,21 @@ EOF
 echo -n > /etc/udev/rules.d/70-persistent-net.rules
 echo -n > /lib/udev/rules.d/75-persistent-net-generator.rules
 
+systemctl enable cloud-init-local.service
+systemctl enable cloud-init.service
+systemctl enable cloud-config.service
+systemctl enable cloud-final.service
+
 mkdir -p /etc/systemd/network
 # OMv1
-cat > /etc/systemd/network/10-internet.link <<'EOF'
+cat > /etc/systemd/network/10-pci-0300.link <<'EOF'
 [Match]
 Path=pci-0000:03:00.0-*
 
 [Link]
 Name=eth0
 EOF
-cat > /etc/systemd/network/11-internet.link <<'EOF'
+cat > /etc/systemd/network/10-pci-0301.link <<'EOF'
 [Match]
 Path=pci-0000:03:00.1-*
 
@@ -109,14 +114,14 @@ Name=eth1
 EOF
 
 # OMv2
-cat > /etc/systemd/network/12-internet.link <<'EOF'
+cat > /etc/systemd/network/10-pci-0800.link <<'EOF'
 [Match]
 Path=pci-0000:08:00.0-*
 
 [Link]
 Name=eth0
 EOF
-cat > /etc/systemd/network/13-internet.link <<'EOF'
+cat > /etc/systemd/network/10-pci-0801.link <<'EOF'
 [Match]
 Path=pci-0000:08:00.1-*
 
@@ -218,10 +223,10 @@ rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
-echo "" > /etc/resolv.conf
+truncate -s0 /etc/resolv.conf
 rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
-for k in $(find /var/log -type f); do echo > $k; done
-for k in $(find /tmp -type f); do rm -f $k; done
+find /var/log -type f -exec truncate -s0 {} \;
+find /tmp -type f -delete

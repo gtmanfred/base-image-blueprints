@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# get out of graphical mode
+systemctl set-default multi-user.target
+
 # fix bootable flag
 parted -s /dev/sda set 1 boot on
 e2label /dev/sda1 root
@@ -40,6 +43,11 @@ update-initramfs -u
 wget http://KICK_HOST/cloud-init/cloud-init_0.7.7-py3.4-systemd.deb
 dpkg -i *.deb
 apt-mark hold cloud-init
+
+systemctl enable cloud-init-local.service
+systemctl enable cloud-init.service
+systemctl enable cloud-config.service
+systemctl enable cloud-final.service
 
 # Debian puts these in the wrong order from what we need
 # should be ConfigDrive, None but preseed populates with
@@ -203,14 +211,15 @@ passwd -d root
 passwd -l root
 apt-get -y clean
 apt-get -y autoremove
+truncate -s0 /etc/resolv.conf
 rm -f /etc/ssh/ssh_host_*
 rm -f /var/cache/apt/archives/*.deb
 rm -f /var/cache/apt/*cache.bin
 rm -f /var/lib/apt/lists/*_Packages
-echo "" > /etc/resolv.conf
 rm -f /root/.bash_history
 rm -f /root/.nano_history
 rm -f /root/.lesshst
 rm -f /root/.ssh/known_hosts
-for k in $(find /var/log -type f); do echo > $k; done
-for k in $(find /tmp -type f); do rm -f $k; done
+find /var/log -type f -exec truncate -s0 {} \;
+find /root -type f ! -name ".*" -delete
+find /tmp -type f -delete
