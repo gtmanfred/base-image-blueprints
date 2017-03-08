@@ -447,6 +447,7 @@ rm -f /etc/growroot-disabled
 # so "bootloader" above is disabled and the things below done manually instead
 grub2-install /dev/hda
 echo 'GRUB_DISABLE_LINUX_UUID=true' >> /etc/default/grub
+echo 'GRUB_ENABLE_LINUX_LABEL=true' >> /etc/default/grub
 grub2-mkconfig --output=/boot/grub2/grub.cfg
 parted -s /dev/hda set 1 boot on
 chmod 000 /usr/lib/YaST2/startup/YaST2.Second-Stage
